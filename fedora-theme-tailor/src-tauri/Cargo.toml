@@ -4,9 +4,13 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-tauri = { version = "2", features = ["fs-all", "shell-all", "dialog-all", "process-all"] }
+tauri = { version = "2", features = [] }
+tauri-plugin-fs = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-process = "2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 dirs = "6.0"
 chrono = { version = "0.4", features = ["serde"] }
-color_eyre = "0.6"
+color-eyre = "0.6"
