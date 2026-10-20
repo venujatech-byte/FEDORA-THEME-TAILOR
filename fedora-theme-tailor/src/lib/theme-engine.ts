@@ -87,7 +87,6 @@ export const BUILTIN_PRESETS: Record<string, ThemeState> = {
 };
 
 const COLOR_TOKEN_KEYS = Object.keys(DEFAULT_COLORS) as (keyof ColorTokens)[];
-const GEOMETRY_TOKEN_KEYS = Object.keys(DEFAULT_GEOMETRY) as (keyof GeometryTokens)[];
 
 export class ThemeEngine {
   state: ThemeState = {
@@ -207,10 +206,10 @@ scrolledwindow undershoot {
 
       let cssContent = '';
       try {
-        cssContent = await readTextFile(gtk4Path, { base: BaseDirectory.Home });
+        cssContent = await readTextFile(gtk4Path, { baseDir: BaseDirectory.Home });
       } catch {
         try {
-          cssContent = await readTextFile(gtk3Path, { base: BaseDirectory.Home });
+          cssContent = await readTextFile(gtk3Path, { baseDir: BaseDirectory.Home });
         } catch {
           return;
         }
@@ -230,7 +229,7 @@ scrolledwindow undershoot {
       const key = match[1] as keyof ColorTokens;
       const value = match[2].trim();
       if (key in this.state.colors) {
-        (this.state.colors as Record<string, string>)[key] = value;
+        (this.state.colors as Record<keyof ColorTokens, string>)[key] = value;
       }
     }
 
@@ -256,7 +255,7 @@ scrolledwindow undershoot {
   }
 
   setGeometry(key: keyof GeometryTokens, value: number | boolean): void {
-    (this.state.geometry as Record<string, number | boolean>)[key] = value;
+    (this.state.geometry as Record<keyof GeometryTokens, number | boolean>)[key] = value;
     if (this.state.presetName !== 'Custom') {
       this.state.presetName = 'Custom';
     }
@@ -280,7 +279,7 @@ scrolledwindow undershoot {
   }
 
   async applyTheme(): Promise<void> {
-    const { writeTextFile, BaseDirectory } = await import('@tauri-apps/plugin-fs');
+    const { writeTextFile, BaseDirectory, mkdir, readTextFile } = await import('@tauri-apps/plugin-fs');
     const configDir = await import('@tauri-apps/api/path').then(m => m.configDir());
 
     const css = this.getCSS();
@@ -292,26 +291,26 @@ scrolledwindow undershoot {
     const gtk3Path = `${gtk3Dir}/gtk.css`;
 
     try {
-      await import('@tauri-apps/plugin-fs').then(m => m.createDir(gtk4Dir, { recursive: true, base: BaseDirectory.Home }));
-      await import('@tauri-apps/plugin-fs').then(m => m.createDir(gtk3Dir, { recursive: true, base: BaseDirectory.Home }));
+      await mkdir(gtk4Dir, { baseDir: BaseDirectory.Home, recursive: true });
+      await mkdir(gtk3Dir, { baseDir: BaseDirectory.Home, recursive: true });
     } catch {}
 
     try {
-      const existing = await import('@tauri-apps/plugin-fs').then(m => m.readTextFile(gtk4Path, { base: BaseDirectory.Home }));
-      await writeTextFile(`${gtk4Path}.bak.${timestamp}`, existing, { base: BaseDirectory.Home });
+      const existing = await readTextFile(gtk4Path, { baseDir: BaseDirectory.Home });
+      await writeTextFile(`${gtk4Path}.bak.${timestamp}`, existing, { baseDir: BaseDirectory.Home });
     } catch {}
 
     try {
-      const existing = await import('@tauri-apps/plugin-fs').then(m => m.readTextFile(gtk3Path, { base: BaseDirectory.Home }));
-      await writeTextFile(`${gtk3Path}.bak.${timestamp}`, existing, { base: BaseDirectory.Home });
+      const existing = await readTextFile(gtk3Path, { baseDir: BaseDirectory.Home });
+      await writeTextFile(`${gtk3Path}.bak.${timestamp}`, existing, { baseDir: BaseDirectory.Home });
     } catch {}
 
-    await writeTextFile(gtk4Path, css, { base: BaseDirectory.Home });
-    await writeTextFile(gtk3Path, css, { base: BaseDirectory.Home });
+    await writeTextFile(gtk4Path, css, { baseDir: BaseDirectory.Home });
+    await writeTextFile(gtk3Path, css, { baseDir: BaseDirectory.Home });
   }
 
   async rollback(): Promise<void> {
-    const { readDir, removeFile, copyFile, BaseDirectory } = await import('@tauri-apps/plugin-fs');
+    const { readDir, copyFile, BaseDirectory } = await import('@tauri-apps/plugin-fs');
     const configDir = await import('@tauri-apps/api/path').then(m => m.configDir());
 
     const gtk4Dir = `${configDir}/gtk-4.0`;
@@ -319,13 +318,13 @@ scrolledwindow undershoot {
 
     for (const dir of [gtk4Dir, gtk3Dir]) {
       try {
-        const files = await readDir(dir, { base: BaseDirectory.Home });
+        const files = await readDir(dir, { baseDir: BaseDirectory.Home });
         const backups = files
           .filter(f => f.name.startsWith('gtk.css.bak.'))
           .sort((a, b) => b.name.localeCompare(a.name));
 
         if (backups.length > 0) {
-          await copyFile(`${dir}/${backups[0].name}`, `${dir}/gtk.css`, { base: BaseDirectory.Home });
+          await copyFile(`${dir}/${backups[0].name}`, `${dir}/gtk.css`, { fromPathBaseDir: BaseDirectory.Home, toPathBaseDir: BaseDirectory.Home });
         }
       } catch {}
     }
@@ -336,8 +335,10 @@ scrolledwindow undershoot {
   async setupFlatpakOverrides(): Promise<void> {
     const { Command } = await import('@tauri-apps/plugin-shell');
     try {
-      await new Command('flatpak', ['override', '--user', '--filesystem=xdg-config/gtk-4.0:ro']).execute();
-      await new Command('flatpak', ['override', '--user', '--filesystem=xdg-config/gtk-3.0:ro']).execute();
+      const cmd1 = Command.create('flatpak', ['override', '--user', '--filesystem=xdg-config/gtk-4.0:ro']);
+      const cmd2 = Command.create('flatpak', ['override', '--user', '--filesystem=xdg-config/gtk-3.0:ro']);
+      await cmd1.execute();
+      await cmd2.execute();
     } catch (error) {
       console.warn('Flatpak override failed:', error);
     }

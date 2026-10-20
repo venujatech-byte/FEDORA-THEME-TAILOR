@@ -44,7 +44,7 @@ export class UIController {
 
   bindEvents(): void {
     document.addEventListener('input', (e) => {
-      const target = e.target as HTMLElement;
+      const target = e.target as HTMLInputElement;
       if (target.dataset.colorKey) {
         this.engine.setColor(target.dataset.colorKey as keyof ColorTokens, target.value);
         const swatch = target.nextElementSibling as HTMLElement;
@@ -53,7 +53,7 @@ export class UIController {
         }
       }
       if (target.dataset.geometryKey) {
-        const value = target.type === 'checkbox' ? (target as HTMLInputElement).checked : parseFloat(target.value);
+        const value = target.type === 'checkbox' ? target.checked : parseFloat(target.value);
         this.engine.setGeometry(target.dataset.geometryKey as keyof GeometryTokens, value);
       }
     });
