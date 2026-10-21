@@ -6,6 +6,7 @@ export interface ColorTokens {
   card_bg_color: string;
   dialog_bg_color: string;
   popover_bg_color: string;
+  context_menu_bg_color: string;
   headerbar_bg_color: string;
   headerbar_fg_color: string;
   headerbar_border_color: string;
@@ -65,6 +66,7 @@ export const DEFAULT_COLORS: ColorTokens = {
   card_bg_color: '#141414',
   dialog_bg_color: '#141414',
   popover_bg_color: '#141414',
+  context_menu_bg_color: '#1e232d',
   headerbar_bg_color: '#1e232d',
   headerbar_fg_color: '#ffffff',
   headerbar_border_color: '#1e232d',
@@ -103,15 +105,15 @@ export const BUILTIN_PRESETS: Record<string, ThemeState> = {
     presetName: 'Fedora OLED Slate Compact',
   },
   'Fedora Blue': {
-    colors: { ...DEFAULT_COLORS, headerbar_bg_color: '#1a5fb4', headerbar_border_color: '#1a5fb4', headerbar_backdrop_color: '#174f99', sidebar_bg_color: '#1a5fb4', sidebar_border_color: '#1a5fb4' },
+    colors: { ...DEFAULT_COLORS, context_menu_bg_color: '#174f99', headerbar_bg_color: '#1a5fb4', headerbar_border_color: '#1a5fb4', headerbar_backdrop_color: '#174f99', sidebar_bg_color: '#1a5fb4', sidebar_border_color: '#1a5fb4' },
     geometry: DEFAULT_GEOMETRY, shell: { ...DEFAULT_SHELL, panel: '#1a5fb4', accent: '#3584e4' }, effects: DEFAULT_EFFECTS, presetName: 'Fedora Blue',
   },
   'Violet Night': {
-    colors: { ...DEFAULT_COLORS, headerbar_bg_color: '#30233f', headerbar_border_color: '#30233f', headerbar_backdrop_color: '#261b34', sidebar_bg_color: '#241c30', sidebar_border_color: '#241c30' },
+    colors: { ...DEFAULT_COLORS, context_menu_bg_color: '#241c30', headerbar_bg_color: '#30233f', headerbar_border_color: '#30233f', headerbar_backdrop_color: '#261b34', sidebar_bg_color: '#241c30', sidebar_border_color: '#241c30' },
     geometry: DEFAULT_GEOMETRY, shell: { ...DEFAULT_SHELL, panel: '#241c30', menu: '#17121e', accent: '#c061cb', dock: '#241c30' }, effects: DEFAULT_EFFECTS, presetName: 'Violet Night',
   },
   'Glass Night': {
-    colors: { ...DEFAULT_COLORS, window_bg_color: '#101722', view_bg_color: '#101722', card_bg_color: '#202b3a', dialog_bg_color: '#202b3a', popover_bg_color: '#202b3a', headerbar_bg_color: '#202b3a', headerbar_border_color: '#202b3a', headerbar_backdrop_color: '#182230', sidebar_bg_color: '#182230', sidebar_border_color: '#182230' },
+    colors: { ...DEFAULT_COLORS, window_bg_color: '#101722', view_bg_color: '#101722', card_bg_color: '#202b3a', dialog_bg_color: '#202b3a', popover_bg_color: '#202b3a', context_menu_bg_color: '#202b3a', headerbar_bg_color: '#202b3a', headerbar_border_color: '#202b3a', headerbar_backdrop_color: '#182230', sidebar_bg_color: '#182230', sidebar_border_color: '#182230' },
     geometry: DEFAULT_GEOMETRY, shell: { ...DEFAULT_SHELL, panel: '#182230', menu: '#202b3a', dock: '#182230', accent: '#62a0ea' }, effects: { glass: true, motion: true }, presetName: 'Glass Night',
   },
 };
@@ -196,7 +198,7 @@ popover contents {
 menu,
 .menu,
 popover.menu {
-  background-color: @headerbar_bg_color;
+  background-color: @context_menu_bg_color;
   color: @headerbar_fg_color;
   border: 1px solid alpha(@headerbar_fg_color, 0.14);
   border-radius: 14px;
