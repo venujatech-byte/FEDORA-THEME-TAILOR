@@ -128,6 +128,38 @@ export class ThemeEngine {
     const css = `
 ${colorDefs}
 
+/* Window, content, cards and dialogs */
+window,
+.background {
+  background-color: @window_bg_color !important;
+  color: @window_fg_color !important;
+}
+
+.view,
+textview text,
+list,
+listview,
+treeview {
+  background-color: @view_bg_color !important;
+  color: @view_fg_color !important;
+}
+
+.card,
+.boxed-list {
+  background-color: @card_bg_color !important;
+}
+
+dialog,
+.dialog {
+  background-color: @dialog_bg_color !important;
+}
+
+popover,
+popover contents {
+  background-color: @popover_bg_color !important;
+  color: @window_fg_color !important;
+}
+
 /* Titlebar & Tabbar Unification */
 headerbar,
 .titlebar,
@@ -136,6 +168,12 @@ tabbar,
 tab {
   background-color: @headerbar_bg_color !important;
   background-image: none !important;
+  color: @headerbar_fg_color !important;
+  border-color: @headerbar_border_color !important;
+}
+
+headerbar:backdrop {
+  background-color: @headerbar_backdrop_color !important;
 }
 
 /* Compact Headerbar Geometry */
@@ -151,6 +189,21 @@ navigation-sidebar,
 stacksidebar,
 .sidebar {
   background-color: @sidebar_bg_color !important;
+  color: @sidebar_fg_color !important;
+  border-color: @sidebar_border_color !important;
+}
+
+.sidebar:backdrop {
+  background-color: @sidebar_backdrop_color !important;
+}
+
+.navigation-sidebar.sidebar,
+.sidebar-pane {
+  background-color: @secondary_sidebar_bg_color !important;
+}
+
+.sidebar-pane:backdrop {
+  background-color: @secondary_sidebar_backdrop_color !important;
 }
 
 .navigation-sidebar list,
@@ -388,9 +441,7 @@ scrolledwindow undershoot {
 
   async setupFlatpakOverrides(): Promise<void> {
     const { Command } = await import('@tauri-apps/plugin-shell');
-    const cmd1 = Command.create('flatpak', ['override', '--user', '--filesystem=xdg-config/gtk-4.0:ro']);
-    const cmd2 = Command.create('flatpak', ['override', '--user', '--filesystem=xdg-config/gtk-3.0:ro']);
-    await cmd1.execute();
-    await cmd2.execute();
+    const command = Command.create('flatpak', ['override', '--user', '--filesystem=xdg-config/gtk-4.0:ro', '--filesystem=xdg-config/gtk-3.0:ro']);
+    await command.execute();
   }
 }
