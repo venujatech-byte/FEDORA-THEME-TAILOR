@@ -194,7 +194,7 @@ export class UIController {
       <div class="preview-pane">
         <div class="preview-header">Live Preview</div>
         <div class="preview-content">
-          <div class="mock-window" style="--headerbar-height: ${geometry.headerbar_min_height}px; --preview-window: ${colors.window_bg_color}; --preview-view: ${colors.view_bg_color}; --preview-header: ${colors.headerbar_bg_color}; --preview-sidebar: ${colors.sidebar_bg_color}; --preview-fg: ${colors.window_fg_color}; --preview-card: ${colors.card_bg_color}">
+          <div class="mock-window" style="--headerbar-height: ${geometry.headerbar_min_height}px; --preview-window: ${colors.window_bg_color}; --preview-window-fg: ${colors.window_fg_color}; --preview-view: ${colors.view_bg_color}; --preview-view-fg: ${colors.view_fg_color}; --preview-header: ${colors.headerbar_bg_color}; --preview-header-fg: ${colors.headerbar_fg_color}; --preview-sidebar: ${colors.sidebar_bg_color}; --preview-sidebar-fg: ${colors.sidebar_fg_color}; --preview-card: ${colors.card_bg_color}; --preview-btn-width: ${geometry.gtk4_button_min_width}px; --preview-btn-height: ${geometry.gtk4_button_min_height}px; --preview-header-padding-top: ${geometry.headerbar_padding_top}px; --preview-header-padding-bottom: ${geometry.headerbar_padding_bottom}px">
             <div class="mock-headerbar">
               <div class="mock-window-controls">
                 <button class="mock-window-control close" aria-label="Close"></button>
@@ -295,11 +295,18 @@ export class UIController {
     Object.entries({
       '--headerbar-height': `${geometry.headerbar_min_height}px`,
       '--preview-window': colors.window_bg_color,
+      '--preview-window-fg': colors.window_fg_color,
       '--preview-view': colors.view_bg_color,
+      '--preview-view-fg': colors.view_fg_color,
       '--preview-header': colors.headerbar_bg_color,
+      '--preview-header-fg': colors.headerbar_fg_color,
       '--preview-sidebar': colors.sidebar_bg_color,
-      '--preview-fg': colors.window_fg_color,
+      '--preview-sidebar-fg': colors.sidebar_fg_color,
       '--preview-card': colors.card_bg_color,
+      '--preview-btn-width': `${geometry.gtk4_button_min_width}px`,
+      '--preview-btn-height': `${geometry.gtk4_button_min_height}px`,
+      '--preview-header-padding-top': `${geometry.headerbar_padding_top}px`,
+      '--preview-header-padding-bottom': `${geometry.headerbar_padding_bottom}px`,
     }).forEach(([key, value]) => preview.style.setProperty(key, value));
     const status = document.getElementById('action-status');
     if (status) status.textContent = 'Unsaved edits · apply when ready.';
