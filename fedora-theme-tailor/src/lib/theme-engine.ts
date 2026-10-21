@@ -176,6 +176,9 @@ popover contents {
 }
 
 /* Titlebar & Tabbar Unification */
+window headerbar,
+window .titlebar,
+headerbar.titlebar,
 headerbar,
 .titlebar,
 windowcontrols,
@@ -185,6 +188,7 @@ tab {
   background-image: none;
   color: @headerbar_fg_color;
   border-color: @headerbar_border_color;
+  box-shadow: none;
 }
 
 headerbar:backdrop {
