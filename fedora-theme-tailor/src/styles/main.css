@@ -296,7 +296,7 @@ html, body, #app {
 
 .mock-window {
   background: var(--preview-window, var(--card));
-  color: var(--preview-fg, var(--fg));
+  color: var(--preview-window-fg, var(--fg));
   border: 1px solid var(--border);
   border-radius: 8px;
   min-width: 600px;
@@ -312,8 +312,9 @@ html, body, #app {
   align-items: center;
   justify-content: space-between;
   background: var(--preview-header, var(--headerbar));
+  color: var(--preview-header-fg, var(--fg));
   border-bottom: 1px solid var(--border);
-  padding: 0 12px;
+  padding: var(--preview-header-padding-top, 0px) 12px var(--preview-header-padding-bottom, 0px);
   min-height: 26px;
   height: var(--headerbar-height, 26px);
 }
@@ -324,8 +325,8 @@ html, body, #app {
 }
 
 .mock-window-control {
-  width: 18px;
-  height: 18px;
+  width: var(--preview-btn-width, 18px);
+  height: var(--preview-btn-height, 18px);
   border-radius: 50%;
   border: none;
   cursor: pointer;
@@ -341,7 +342,7 @@ html, body, #app {
 .mock-title {
   font-size: 12px;
   font-weight: 500;
-  color: var(--fg);
+  color: var(--preview-header-fg, var(--fg));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -349,14 +350,15 @@ html, body, #app {
 
 .mock-tabs {
   display: flex;
-  background: var(--headerbar);
+  background: var(--preview-header, var(--headerbar));
+  color: var(--preview-header-fg, var(--fg));
   border-bottom: 1px solid var(--border);
 }
 
 .mock-tab {
   padding: 6px 16px;
   font-size: 12px;
-  color: var(--fg-muted);
+  color: var(--preview-header-fg, var(--fg-muted));
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
@@ -381,6 +383,7 @@ html, body, #app {
 .mock-sidebar {
   width: 200px;
   background: var(--preview-sidebar, var(--sidebar));
+  color: var(--preview-sidebar-fg, var(--fg));
   border-right: 1px solid var(--border);
   padding: 12px 0;
   display: flex;
@@ -391,7 +394,8 @@ html, body, #app {
 .mock-sidebar-item {
   padding: 8px 16px;
   font-size: 12px;
-  color: var(--fg-muted);
+  color: inherit;
+  opacity: 0.72;
   cursor: pointer;
   transition: background-color var(--transition), color var(--transition);
   border-left: 3px solid transparent;
@@ -401,12 +405,14 @@ html, body, #app {
 .mock-sidebar-item.active {
   background: rgba(255, 255, 255, 0.05);
   color: var(--fg);
+  opacity: 1;
   border-left-color: var(--accent);
 }
 
 .mock-content {
   flex: 1;
   background: var(--preview-view, var(--canvas));
+  color: var(--preview-view-fg, var(--fg));
   padding: 20px;
   overflow-y: auto;
 }
