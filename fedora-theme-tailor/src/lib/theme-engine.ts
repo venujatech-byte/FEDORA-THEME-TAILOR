@@ -35,11 +35,24 @@ export interface GeometryTokens {
   disable_overshoot: boolean;
 }
 
+export interface ShellTokens {
+  panel: string;
+  menu: string;
+  text: string;
+  accent: string;
+  dock: string;
+}
+
 export interface ThemeState {
   colors: ColorTokens;
   geometry: GeometryTokens;
+  shell: ShellTokens;
   presetName: string;
 }
+
+export const DEFAULT_SHELL: ShellTokens = {
+  panel: '#1e232d', menu: '#141414', text: '#ffffff', accent: '#4a9eff', dock: '#1e232d',
+};
 
 export const DEFAULT_COLORS: ColorTokens = {
   window_bg_color: '#000000',
@@ -82,6 +95,7 @@ export const BUILTIN_PRESETS: Record<string, ThemeState> = {
   'Fedora OLED Slate Compact': {
     colors: DEFAULT_COLORS,
     geometry: DEFAULT_GEOMETRY,
+    shell: DEFAULT_SHELL,
     presetName: 'Fedora OLED Slate Compact',
   },
 };
@@ -93,6 +107,7 @@ export class ThemeEngine {
   state: ThemeState = {
     colors: { ...DEFAULT_COLORS },
     geometry: { ...DEFAULT_GEOMETRY },
+    shell: { ...DEFAULT_SHELL },
     presetName: 'Custom',
   };
   listeners: Set<() => void> = new Set();
@@ -101,7 +116,7 @@ export class ThemeEngine {
     try {
       const saved = JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY) || '{}') as Record<string, ThemeState>;
       Object.entries(saved).forEach(([name, preset]) => {
-        if (name !== 'Fedora OLED Slate Compact' && preset?.colors && preset?.geometry) BUILTIN_PRESETS[name] = preset;
+        if (name !== 'Fedora OLED Slate Compact' && preset?.colors && preset?.geometry) BUILTIN_PRESETS[name] = { ...preset, shell: { ...DEFAULT_SHELL, ...preset.shell } };
       });
     } catch {}
   }
@@ -257,8 +272,13 @@ scrolledwindow undershoot {
     return css;
   }
 
+  getShellCSS(): string {
+    const { panel, menu, text, accent, dock } = this.state.shell;
+    return `#panel { background-color: ${panel}; color: ${text}; }\n.popup-menu-content, .quick-settings, .calendar, .message-list, .modal-dialog { background-color: ${menu}; color: ${text}; }\n#panel .panel-button:hover, #panel .panel-button:active, .quick-toggle:checked { background-color: ${accent}; color: ${text}; }\n#dash, .dash-background { background-color: ${dock}; }`;
+  }
+
   async loadCurrentTheme(): Promise<void> {
-    this.state = { colors: { ...DEFAULT_COLORS }, geometry: { ...DEFAULT_GEOMETRY }, presetName: 'Custom' };
+    this.state = { colors: { ...DEFAULT_COLORS }, geometry: { ...DEFAULT_GEOMETRY }, shell: { ...DEFAULT_SHELL }, presetName: 'Custom' };
     try {
       const { readTextFile, BaseDirectory } = await import('@tauri-apps/plugin-fs');
       const configDir = await import('@tauri-apps/api/path').then(m => m.configDir());
@@ -324,16 +344,22 @@ scrolledwindow undershoot {
     this.notify();
   }
 
+  setShellColor(key: keyof ShellTokens, value: string): void {
+    this.state.shell[key] = value;
+    this.state.presetName = 'Custom';
+    this.notify();
+  }
+
   loadPreset(name: string): boolean {
     const preset = BUILTIN_PRESETS[name];
     if (!preset) return false;
-    this.state = { ...preset, colors: { ...preset.colors }, geometry: { ...preset.geometry } };
+    this.state = { ...preset, colors: { ...preset.colors }, geometry: { ...preset.geometry }, shell: { ...DEFAULT_SHELL, ...preset.shell } };
     this.notify();
     return true;
   }
 
   savePreset(name: string): void {
-    BUILTIN_PRESETS[name] = { ...this.state, colors: { ...this.state.colors }, geometry: { ...this.state.geometry }, presetName: name };
+    BUILTIN_PRESETS[name] = { ...this.state, colors: { ...this.state.colors }, geometry: { ...this.state.geometry }, shell: { ...this.state.shell }, presetName: name };
     this.persistPresets();
   }
 
@@ -366,12 +392,15 @@ scrolledwindow undershoot {
     const gtk3Dir = `${configDir}/gtk-3.0`;
     const gtk4Path = `${gtk4Dir}/gtk.css`;
     const gtk3Path = `${gtk3Dir}/gtk.css`;
+    const shellDir = '.themes/FedoraThemeTailor/gnome-shell';
+    const shellPath = `${shellDir}/gnome-shell.css`;
 
     await mkdir(gtk4Dir, { baseDir: BaseDirectory.Home, recursive: true });
     await mkdir(gtk3Dir, { baseDir: BaseDirectory.Home, recursive: true });
+    await mkdir(shellDir, { baseDir: BaseDirectory.Home, recursive: true });
 
     const backupId = new Date().toISOString().replace(/[:.]/g, '-');
-    for (const path of [gtk4Path, gtk3Path]) {
+    for (const path of [gtk4Path, gtk3Path, shellPath]) {
       const original = `${path}.original`;
       const absent = `${path}.original.absent`;
       if (!await exists(original, { baseDir: BaseDirectory.Home }) && !await exists(absent, { baseDir: BaseDirectory.Home })) {
@@ -388,6 +417,7 @@ scrolledwindow undershoot {
 
     await writeTextFile(gtk4Path, css, { baseDir: BaseDirectory.Home });
     await writeTextFile(gtk3Path, css, { baseDir: BaseDirectory.Home });
+    await writeTextFile(shellPath, this.getShellCSS(), { baseDir: BaseDirectory.Home });
   }
 
   async restoreOriginal(): Promise<void> {
@@ -396,9 +426,10 @@ scrolledwindow undershoot {
 
     const gtk4Path = `${configDir}/gtk-4.0/gtk.css`;
     const gtk3Path = `${configDir}/gtk-3.0/gtk.css`;
+    const shellPath = '.themes/FedoraThemeTailor/gnome-shell/gnome-shell.css';
 
     let restored = false;
-    for (const path of [gtk4Path, gtk3Path]) {
+    for (const path of [gtk4Path, gtk3Path, shellPath]) {
       if (await exists(`${path}.original`, { baseDir: BaseDirectory.Home })) {
         const original = await readTextFile(`${path}.original`, { baseDir: BaseDirectory.Home });
         await writeTextFile(path, original, { baseDir: BaseDirectory.Home });
@@ -419,17 +450,18 @@ scrolledwindow undershoot {
 
     const gtk4Dir = `${configDir}/gtk-4.0`;
     const gtk3Dir = `${configDir}/gtk-3.0`;
+    const shellDir = '.themes/FedoraThemeTailor/gnome-shell';
 
     let restored = false;
-    for (const dir of [gtk4Dir, gtk3Dir]) {
+    for (const dir of [gtk4Dir, gtk3Dir, shellDir]) {
       try {
         const files = await readDir(dir, { baseDir: BaseDirectory.Home });
         const backups = files
-          .filter(f => f.name.startsWith('gtk.css.bak.'))
+          .filter(f => f.name.startsWith(dir === shellDir ? 'gnome-shell.css.bak.' : 'gtk.css.bak.'))
           .sort((a, b) => b.name.localeCompare(a.name));
 
         if (backups.length > 0) {
-          await copyFile(`${dir}/${backups[0].name}`, `${dir}/gtk.css`, { fromPathBaseDir: BaseDirectory.Home, toPathBaseDir: BaseDirectory.Home });
+          await copyFile(`${dir}/${backups[0].name}`, `${dir}/${dir === shellDir ? 'gnome-shell.css' : 'gtk.css'}`, { fromPathBaseDir: BaseDirectory.Home, toPathBaseDir: BaseDirectory.Home });
           restored = true;
         }
       } catch {}
