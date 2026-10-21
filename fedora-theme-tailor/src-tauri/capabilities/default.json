@@ -1,0 +1,72 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "identifier": "default",
+  "description": "Default permissions for Fedora Theme Tailor",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "fs:default",
+    "fs:allow-read-text-file",
+    "fs:allow-write-text-file",
+    "fs:allow-read-dir",
+    "fs:allow-create",
+    "fs:allow-copy-file",
+    "fs:allow-exists",
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [
+        { "path": "$CONFIG/gtk-4.0/*" },
+        { "path": "$CONFIG/gtk-3.0/*" },
+        { "path": "$HOME/.config/gtk-4.0/*" },
+        { "path": "$HOME/.config/gtk-3.0/*" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [
+        { "path": "$CONFIG/gtk-4.0/*" },
+        { "path": "$CONFIG/gtk-3.0/*" },
+        { "path": "$HOME/.config/gtk-4.0/*" },
+        { "path": "$HOME/.config/gtk-3.0/*" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-read-dir",
+      "allow": [
+        { "path": "$CONFIG/gtk-4.0" },
+        { "path": "$CONFIG/gtk-3.0" },
+        { "path": "$HOME/.config/gtk-4.0" },
+        { "path": "$HOME/.config/gtk-3.0" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-create",
+      "allow": [
+        { "path": "$CONFIG/gtk-4.0" },
+        { "path": "$CONFIG/gtk-3.0" },
+        { "path": "$HOME/.config/gtk-4.0" },
+        { "path": "$HOME/.config/gtk-3.0" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-copy-file",
+      "allow": [
+        { "path": "$CONFIG/gtk-4.0/*" },
+        { "path": "$CONFIG/gtk-3.0/*" },
+        { "path": "$HOME/.config/gtk-4.0/*" },
+        { "path": "$HOME/.config/gtk-3.0/*" }
+      ]
+    },
+    "shell:default",
+    "shell:allow-execute",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "flatpak",
+          "args": ["override", "--user", "--filesystem=xdg-config/gtk-4.0:ro", "--filesystem=xdg-config/gtk-3.0:ro"]
+        }
+      ]
+    }
+  ]
+}
