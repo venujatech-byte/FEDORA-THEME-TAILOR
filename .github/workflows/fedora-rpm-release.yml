@@ -29,7 +29,7 @@ jobs:
         working-directory: fedora-theme-tailor
         run: |
           npm ci
-          npm run tauri -- build --bundles rpm
+          npm run tauri -- build --bundles rpm --config "{\"bundle\":{\"linux\":{\"rpm\":{\"release\":\"1.${GITHUB_RUN_NUMBER}\"}}}}"
           rpm_path=$(find src-tauri/target/release/bundle/rpm -maxdepth 1 -name '*.rpm' -print -quit)
           test -n "$rpm_path"
           echo "RPM_PATH=fedora-theme-tailor/$rpm_path" >> "$GITHUB_ENV"
