@@ -12,6 +12,7 @@ fn desktop_dirs() -> Vec<PathBuf> {
     let home = dirs::home_dir().unwrap_or_default();
     [
         home.join(".local/share/applications"),
+        home.join(".local/share/flatpak/exports/share/applications"),
         PathBuf::from("/usr/share/applications"),
         PathBuf::from("/var/lib/flatpak/exports/share/applications"),
     ]
@@ -62,7 +63,8 @@ fn list_desktop_apps() -> Vec<DesktopApp> {
                 continue;
             };
             if !hidden && !name.is_empty() {
-                apps.insert(id.clone(), DesktopApp { id, name, icon });
+                apps.entry(id.clone())
+                    .or_insert(DesktopApp { id, name, icon });
             }
         }
     }
@@ -88,6 +90,7 @@ fn set_app_icon(id: String, icon: String) -> Result<(), String> {
     let home = dirs::home_dir().ok_or("Home directory unavailable")?;
     let target = home.join(".local/share/applications").join(&id);
     let backup = target.with_extension("desktop.fedora-theme-tailor-original");
+    let created = target.with_extension("desktop.fedora-theme-tailor-created");
     let source = if target.exists() {
         target.clone()
     } else {
@@ -99,9 +102,6 @@ fn set_app_icon(id: String, icon: String) -> Result<(), String> {
             .ok_or("Application launcher not found")?
     };
     let mut text = fs::read_to_string(&source).map_err(|e| e.to_string())?;
-    if !backup.exists() && target.exists() {
-        fs::copy(&target, &backup).map_err(|e| e.to_string())?;
-    }
     let mut section = false;
     let mut replaced = false;
     let mut updated = Vec::new();
@@ -121,6 +121,12 @@ fn set_app_icon(id: String, icon: String) -> Result<(), String> {
     }
     text = updated.join("\n") + "\n";
     fs::create_dir_all(target.parent().unwrap()).map_err(|e| e.to_string())?;
+    if !backup.exists() && !created.exists() && target.exists() {
+        fs::copy(&target, &backup).map_err(|e| e.to_string())?;
+    }
+    if !target.exists() {
+        fs::write(&created, "").map_err(|e| e.to_string())?;
+    }
     fs::write(target, text).map_err(|e| e.to_string())
 }
 
@@ -134,10 +140,14 @@ fn reset_app_icon(id: String) -> Result<(), String> {
         .join(".local/share/applications")
         .join(&id);
     let backup = target.with_extension("desktop.fedora-theme-tailor-original");
+    let created = target.with_extension("desktop.fedora-theme-tailor-created");
     if backup.exists() {
         fs::rename(backup, target).map_err(|e| e.to_string())
-    } else if target.exists() {
-        fs::remove_file(target).map_err(|e| e.to_string())
+    } else if created.exists() {
+        if target.exists() {
+            fs::remove_file(target).map_err(|e| e.to_string())?;
+        }
+        fs::remove_file(created).map_err(|e| e.to_string())
     } else {
         Ok(())
     }
