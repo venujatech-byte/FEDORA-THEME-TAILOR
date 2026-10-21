@@ -4,3 +4,9 @@ build/
 *.log
 .DS_Store
 target/
+
+# Tauri-generated schemas and local secrets
+/src-tauri/gen/
+.env
+.env.*
+!.env.example
