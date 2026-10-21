@@ -74,7 +74,7 @@ export class UIController {
       if (button.dataset.action === 'choose-icon') this.chooseIcon(button.dataset.app!);
       if (button.dataset.action === 'reset-icon') this.run('Restoring app icon…', 'Original app icon restored.', async () => { await invoke('reset_app_icon', { id: button.dataset.app }); this.apps = await invoke<UIController['apps']>('list_desktop_apps'); this.render(); });
       const action = button.dataset.action;
-      if (action === 'apply') this.run('Saving GTK and Shell styles…', 'GTK styles saved. Restart apps to reload; enable User Themes to use the Shell theme.', () => this.engine.applyTheme());
+      if (action === 'apply') this.run('Saving GTK and Shell styles…', 'Theme changes applied successfully.', () => this.engine.applyTheme());
       if (action === 'rollback') this.run('Undoing the last apply…', 'Previous GTK and Shell styles restored.', () => this.engine.rollback());
       if (action === 'original' && confirm('Restore the GTK and Shell files saved before the first apply?')) this.run('Restoring original styles…', 'Original styles restored.', () => this.engine.restoreOriginal());
       if (action === 'flatpak') this.run('Enabling Flatpak access…', 'Flatpak apps can now read GTK 3 and GTK 4 styles.', () => this.engine.setupFlatpakOverrides());
@@ -144,7 +144,15 @@ export class UIController {
   colorLabel(key: keyof ColorTokens): string { return key.replace(/_bg_color$/, ' background').replace(/_fg_color$/, ' text').replace(/_color$/, '').replace(/_/g, ' ').replace('headerbar', 'title bar').replace(/^view /, 'content '); }
   async run(pending: string, success: string, action: () => Promise<void>): Promise<void> {
     const status = document.getElementById('action-status'); if (status) status.textContent = pending;
-    try { await action(); this.render(); const result = document.getElementById('action-status'); if (result) result.textContent = success; }
+    try { await action(); this.render(); const result = document.getElementById('action-status'); if (result) result.textContent = success; if (success === 'Theme changes applied successfully.') this.showToast(success); }
     catch (error) { const result = document.getElementById('action-status'); if (result) result.textContent = `Could not finish: ${String(error)}`; }
+  }
+
+  showToast(message: string): void {
+    document.getElementById('apply-toast')?.remove();
+    const toast = document.createElement('div');
+    toast.id = 'apply-toast'; toast.className = 'apply-toast'; toast.setAttribute('role', 'status'); toast.setAttribute('aria-live', 'polite'); toast.textContent = message;
+    document.body.appendChild(toast);
+    window.setTimeout(() => toast.remove(), 3200);
   }
 }
