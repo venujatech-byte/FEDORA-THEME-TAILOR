@@ -38,29 +38,5 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
-  },
-  "plugins": {
-    "fs": {
-      "all": true,
-      "scope": {
-        "allow": [
-          "$CONFIG/gtk-4.0/*",
-          "$CONFIG/gtk-3.0/*",
-          "$HOME/.config/gtk-4.0/*",
-          "$HOME/.config/gtk-3.0/*"
-        ]
-      }
-    },
-    "shell": {
-      "all": true,
-      "scope": {
-        "allow": [
-          {
-            "name": "flatpak",
-            "args": ["override", "--user", "--filesystem=xdg-config/gtk-4.0:ro", "--filesystem=xdg-config/gtk-3.0:ro"]
-          }
-        ]
-      }
-    }
   }
 }
