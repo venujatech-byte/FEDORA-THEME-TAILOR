@@ -25,7 +25,17 @@ export class UIController {
       if (input.dataset.color) this.engine.setColor(input.dataset.color as keyof ColorTokens, input.value);
       if (input.dataset.shell) this.engine.setShellColor(input.dataset.shell as keyof ShellTokens, input.value);
       if (input.dataset.geometry) this.engine.setGeometry(input.dataset.geometry as keyof GeometryTokens, input.type === 'checkbox' ? input.checked : +input.value);
-      if (input.dataset.color || input.dataset.shell || input.dataset.geometry) this.render();
+      if (input.dataset.color || input.dataset.shell || input.dataset.geometry) {
+        const output = input.parentElement?.querySelector('output');
+        if (output) output.textContent = `${input.value} px`;
+        const { colors, shell, presetName } = this.engine.state;
+        const preview = document.querySelector('.preview-pane');
+        if (preview) preview.outerHTML = this.renderPreview(colors, shell, presetName);
+        const chip = document.querySelector('.preset-chip');
+        if (chip) chip.textContent = presetName;
+        const status = document.getElementById('action-status');
+        if (status) status.textContent = 'Unsaved edits · apply when ready.';
+      }
     });
     document.addEventListener('click', e => {
       const button = (e.target as HTMLElement).closest<HTMLElement>('[data-tab], [data-preview], [data-action], [data-preset]');
