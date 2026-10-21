@@ -306,6 +306,7 @@ export class UIController {
     if (status) status.textContent = pending;
     try {
       await action();
+      this.render();
       if (status) status.textContent = success;
     } catch (error) {
       if (status) status.textContent = `Could not finish: ${String(error)}`;
