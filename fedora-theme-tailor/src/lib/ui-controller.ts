@@ -2,7 +2,7 @@ import { ThemeEngine, ColorTokens, GeometryTokens, ShellTokens } from './theme-e
 
 const groups: Record<string, (keyof ColorTokens)[]> = {
   'Window & content': ['window_bg_color', 'window_fg_color', 'view_bg_color', 'view_fg_color'],
-  'Cards & popovers': ['card_bg_color', 'dialog_bg_color', 'popover_bg_color'],
+  'Cards, menus & popovers': ['card_bg_color', 'dialog_bg_color', 'popover_bg_color'],
   'Title bars': ['headerbar_bg_color', 'headerbar_fg_color', 'headerbar_border_color', 'headerbar_backdrop_color'],
   'Sidebars': ['sidebar_bg_color', 'sidebar_fg_color', 'sidebar_backdrop_color', 'sidebar_border_color', 'secondary_sidebar_bg_color', 'secondary_sidebar_backdrop_color'],
 };
@@ -99,7 +99,7 @@ export class UIController {
   }
 
   escape(value: string): string { return value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!); }
-  colorLabel(key: keyof ColorTokens): string { return key.replace(/_bg_color$/, ' background').replace(/_fg_color$/, ' text').replace(/_color$/, '').replace(/_/g, ' ').replace('headerbar', 'title bar').replace(/^view /, 'content '); }
+  colorLabel(key: keyof ColorTokens): string { return key === 'popover_bg_color' ? 'Menus & context menu background' : key.replace(/_bg_color$/, ' background').replace(/_fg_color$/, ' text').replace(/_color$/, '').replace(/_/g, ' ').replace('headerbar', 'title bar').replace(/^view /, 'content '); }
   async run(pending: string, success: string, action: () => Promise<void>): Promise<void> {
     const status = document.getElementById('action-status'); if (status) status.textContent = pending;
     try { await action(); this.render(); const result = document.getElementById('action-status'); if (result) result.textContent = success; }
