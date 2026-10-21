@@ -92,12 +92,12 @@
       ]
     },
     "shell:default",
-    "shell:allow-execute",
     {
       "identifier": "shell:allow-execute",
       "allow": [
         {
           "name": "flatpak",
+          "cmd": "flatpak",
           "args": ["override", "--user", "--filesystem=xdg-config/gtk-4.0:ro", "--filesystem=xdg-config/gtk-3.0:ro"]
         }
       ]
