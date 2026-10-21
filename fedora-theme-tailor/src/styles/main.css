@@ -70,6 +70,17 @@ html, body, #app {
   padding: 12px;
 }
 
+.scope-card {
+  margin-bottom: 18px;
+  padding: 12px;
+  background: var(--card);
+  border-left: 2px solid var(--accent);
+}
+
+.scope-card h3 { margin-bottom: 6px; font-size: 13px; }
+.scope-card p { color: var(--fg-muted); font-size: 12px; }
+.scope-card p + p { margin-top: 6px; }
+
 .section {
   margin-bottom: 20px;
 }
