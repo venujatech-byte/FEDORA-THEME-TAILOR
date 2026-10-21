@@ -192,6 +192,36 @@ popover contents {
   color: @window_fg_color;
 }
 
+/* GTK 3 menus and GTK 4 context-menu popovers */
+menu,
+.menu,
+popover.menu {
+  background-color: @headerbar_bg_color;
+  color: @headerbar_fg_color;
+  border: 1px solid alpha(@headerbar_fg_color, 0.14);
+  border-radius: 14px;
+  box-shadow: 0 5px 18px alpha(#000000, 0.35);
+}
+
+menuitem,
+popover.menu modelbutton {
+  background-color: transparent;
+  color: @headerbar_fg_color;
+  padding: 8px 12px;
+}
+
+menuitem:hover,
+popover.menu modelbutton:hover {
+  background-color: alpha(@headerbar_fg_color, 0.10);
+  color: @headerbar_fg_color;
+}
+
+menu separator,
+popover.menu separator {
+  background-color: alpha(@headerbar_fg_color, 0.14);
+  min-height: 1px;
+}
+
 /* Titlebar & Tabbar Unification */
 window headerbar,
 window .titlebar,
