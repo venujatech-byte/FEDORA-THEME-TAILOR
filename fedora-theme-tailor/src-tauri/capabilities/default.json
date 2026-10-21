@@ -11,7 +11,15 @@
     "fs:allow-read-dir",
     "fs:allow-create",
     "fs:allow-copy-file",
-    "fs:allow-exists",
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [
+        { "path": "$CONFIG/gtk-4.0/*" },
+        { "path": "$CONFIG/gtk-3.0/*" },
+        { "path": "$HOME/.config/gtk-4.0/*" },
+        { "path": "$HOME/.config/gtk-3.0/*" }
+      ]
+    },
     {
       "identifier": "fs:allow-mkdir",
       "allow": [
