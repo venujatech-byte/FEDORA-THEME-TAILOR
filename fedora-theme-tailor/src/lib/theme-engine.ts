@@ -116,7 +116,7 @@ export const BUILTIN_PRESETS: Record<string, ThemeState> = {
   },
   'Glass Night': {
     colors: { ...DEFAULT_COLORS, window_bg_color: '#101722', view_bg_color: '#101722', card_bg_color: '#202b3a', dialog_bg_color: '#202b3a', popover_bg_color: '#202b3a', context_menu_bg_color: '#202b3a', headerbar_bg_color: '#202b3a', headerbar_border_color: '#202b3a', headerbar_backdrop_color: '#182230', sidebar_bg_color: '#182230', sidebar_border_color: '#182230' },
-    geometry: DEFAULT_GEOMETRY, shell: { ...DEFAULT_SHELL, panel: '#182230', menu: '#202b3a', dock: '#182230', accent: '#62a0ea' }, effects: { glass: true, motion: true }, presetName: 'Glass Night',
+    geometry: DEFAULT_GEOMETRY, shell: { ...DEFAULT_SHELL, panel: '#182230', menu: '#202b3a', dock: '#182230', accent: '#62a0ea' }, effects: { glass: true, motion: true, contextMenuTransparent: false }, presetName: 'Glass Night',
   },
 };
 
