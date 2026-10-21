@@ -87,6 +87,7 @@ export const BUILTIN_PRESETS: Record<string, ThemeState> = {
 };
 
 const COLOR_TOKEN_KEYS = Object.keys(DEFAULT_COLORS) as (keyof ColorTokens)[];
+const PRESET_STORAGE_KEY = 'fedora-theme-tailor.presets';
 
 export class ThemeEngine {
   state: ThemeState = {
@@ -96,7 +97,14 @@ export class ThemeEngine {
   };
   listeners: Set<() => void> = new Set();
 
-  constructor() {}
+  constructor() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY) || '{}') as Record<string, ThemeState>;
+      Object.entries(saved).forEach(([name, preset]) => {
+        if (name !== 'Fedora OLED Slate Compact' && preset?.colors && preset?.geometry) BUILTIN_PRESETS[name] = preset;
+      });
+    } catch {}
+  }
 
   subscribe(fn: () => void) {
     this.listeners.add(fn);
@@ -273,6 +281,22 @@ scrolledwindow undershoot {
 
   savePreset(name: string): void {
     BUILTIN_PRESETS[name] = { ...this.state, colors: { ...this.state.colors }, geometry: { ...this.state.geometry }, presetName: name };
+    this.persistPresets();
+  }
+
+  deletePreset(name: string): void {
+    if (name === 'Fedora OLED Slate Compact') return;
+    delete BUILTIN_PRESETS[name];
+    this.persistPresets();
+  }
+
+  persistPresets(): void {
+    try {
+      const custom = Object.fromEntries(Object.entries(BUILTIN_PRESETS).filter(([name]) => name !== 'Fedora OLED Slate Compact'));
+      localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(custom));
+    } catch (error) {
+      console.warn('Could not save presets:', error);
+    }
   }
 
   getPresets(): string[] {
