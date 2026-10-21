@@ -1,0 +1,60 @@
+name: Fedora RPM release
+
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: fedora-theme-tailor/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Tauri and RPM build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential curl file libayatana-appindicator3-dev libssl-dev libwebkit2gtk-4.1-dev librsvg2-dev libxdo-dev patchelf rpm
+      - name: Build RPM
+        working-directory: fedora-theme-tailor
+        run: |
+          npm ci
+          npm run tauri -- build --bundles rpm
+          rpm_path=$(find src-tauri/target/release/bundle/rpm -maxdepth 1 -name '*.rpm' -print -quit)
+          test -n "$rpm_path"
+          echo "RPM_PATH=fedora-theme-tailor/$rpm_path" >> "$GITHUB_ENV"
+      - name: Write release notes since previous RPM build
+        env:
+          RELEASE_TAG: fedora-rpm-build-${{ github.run_number }}
+        run: |
+          previous=$(git tag --list 'fedora-rpm-build-*' --sort=-version:refname | head -n 1)
+          if [ -n "$previous" ]; then
+            echo "Changes since $previous:" > release-notes.md
+            git log --format='- %s (%h)' "$previous..$GITHUB_SHA" >> release-notes.md
+            [ -s release-notes.md ]
+            if [ "$(wc -l < release-notes.md)" -eq 1 ]; then echo '- No new commits.' >> release-notes.md; fi
+          else
+            echo 'Changes included in the first RPM build:' > release-notes.md
+            git log --format='- %s (%h)' "$GITHUB_SHA" >> release-notes.md
+          fi
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: fedora-rpm-build-${{ github.run_number }}
+        run: |
+          title="Fedora Theme Tailor RPM build $GITHUB_RUN_NUMBER"
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "$RPM_PATH" --clobber
+          else
+            gh release create "$RELEASE_TAG" "$RPM_PATH" --title "$title" --notes-file release-notes.md
+          fi
