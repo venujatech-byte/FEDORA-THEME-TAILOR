@@ -131,8 +131,8 @@ ${colorDefs}
 /* Window, content, cards and dialogs */
 window,
 .background {
-  background-color: @window_bg_color !important;
-  color: @window_fg_color !important;
+  background-color: @window_bg_color;
+  color: @window_fg_color;
 }
 
 .view,
@@ -140,24 +140,24 @@ textview text,
 list,
 listview,
 treeview {
-  background-color: @view_bg_color !important;
-  color: @view_fg_color !important;
+  background-color: @view_bg_color;
+  color: @view_fg_color;
 }
 
 .card,
 .boxed-list {
-  background-color: @card_bg_color !important;
+  background-color: @card_bg_color;
 }
 
 dialog,
 .dialog {
-  background-color: @dialog_bg_color !important;
+  background-color: @dialog_bg_color;
 }
 
 popover,
 popover contents {
-  background-color: @popover_bg_color !important;
-  color: @window_fg_color !important;
+  background-color: @popover_bg_color;
+  color: @window_fg_color;
 }
 
 /* Titlebar & Tabbar Unification */
@@ -166,21 +166,21 @@ headerbar,
 windowcontrols,
 tabbar,
 tab {
-  background-color: @headerbar_bg_color !important;
-  background-image: none !important;
-  color: @headerbar_fg_color !important;
-  border-color: @headerbar_border_color !important;
+  background-color: @headerbar_bg_color;
+  background-image: none;
+  color: @headerbar_fg_color;
+  border-color: @headerbar_border_color;
 }
 
 headerbar:backdrop {
-  background-color: @headerbar_backdrop_color !important;
+  background-color: @headerbar_backdrop_color;
 }
 
 /* Compact Headerbar Geometry */
 headerbar {
-  min-height: ${headerbarHeight} !important;
-  padding-top: ${px(geometry.headerbar_padding_top)} !important;
-  padding-bottom: ${px(geometry.headerbar_padding_bottom)} !important;
+  min-height: ${headerbarHeight};
+  padding-top: ${px(geometry.headerbar_padding_top)};
+  padding-bottom: ${px(geometry.headerbar_padding_bottom)};
 }
 
 /* Sidebar Overrides & Transparent Lists */
@@ -188,61 +188,61 @@ headerbar {
 navigation-sidebar,
 stacksidebar,
 .sidebar {
-  background-color: @sidebar_bg_color !important;
-  color: @sidebar_fg_color !important;
-  border-color: @sidebar_border_color !important;
+  background-color: @sidebar_bg_color;
+  color: @sidebar_fg_color;
+  border-color: @sidebar_border_color;
 }
 
 .sidebar:backdrop {
-  background-color: @sidebar_backdrop_color !important;
+  background-color: @sidebar_backdrop_color;
 }
 
 .navigation-sidebar.sidebar,
 .sidebar-pane {
-  background-color: @secondary_sidebar_bg_color !important;
+  background-color: @secondary_sidebar_bg_color;
 }
 
 .sidebar-pane:backdrop {
-  background-color: @secondary_sidebar_backdrop_color !important;
+  background-color: @secondary_sidebar_backdrop_color;
 }
 
 .navigation-sidebar list,
 .navigation-sidebar listview,
 stacksidebar list {
-  background-color: transparent !important;
+  background-color: transparent;
 }
 
 /* Compact GTK4 Window Controls & Title */
 windowcontrols button,
 windowcontrols button.image-button {
-  min-height: ${px(geometry.gtk4_button_min_height)} !important;
-  min-width: ${px(geometry.gtk4_button_min_width)} !important;
-  padding: 0 ${px(geometry.gtk4_button_padding)} !important;
-  margin: ${px(geometry.gtk4_button_margin)} !important;
+  min-height: ${px(geometry.gtk4_button_min_height)};
+  min-width: ${px(geometry.gtk4_button_min_width)};
+  padding: 0 ${px(geometry.gtk4_button_padding)};
+  margin: ${px(geometry.gtk4_button_margin)};
 }
 
 windowtitle,
 windowtitle label.title {
-  min-height: ${px(geometry.gtk4_title_min_height)} !important;
-  padding: 0 !important;
-  margin: 0 !important;
+  min-height: ${px(geometry.gtk4_title_min_height)};
+  padding: 0;
+  margin: 0;
 }
 
 /* Compact GTK3 & SSD Fallbacks */
 window.ssd headerbar button.titlebutton,
 headerbar.default-decoration button.titlebutton {
-  min-height: ${px(geometry.gtk3_button_min_height)} !important;
-  min-width: ${px(geometry.gtk3_button_min_width)} !important;
-  padding: 0 ${px(geometry.gtk3_button_padding)} !important;
-  margin: ${px(geometry.gtk3_button_margin)} !important;
+  min-height: ${px(geometry.gtk3_button_min_height)};
+  min-width: ${px(geometry.gtk3_button_min_width)};
+  padding: 0 ${px(geometry.gtk3_button_padding)};
+  margin: ${px(geometry.gtk3_button_margin)};
 }
 
 window.ssd headerbar label.title,
 headerbar.default-decoration label.title,
 headerbar.default-decoration windowtitle {
-  min-height: ${px(geometry.gtk3_title_min_height)} !important;
-  padding: 0 !important;
-  margin: 0 !important;
+  min-height: ${px(geometry.gtk3_title_min_height)};
+  padding: 0;
+  margin: 0;
 }
 
 /* Kinetic Scroll / Overshoot Disabler */
@@ -295,13 +295,13 @@ scrolledwindow undershoot {
       }
     }
 
-    const heightRegex = /min-height:\s*(\d+)px\s*!important;/g;
+    const heightRegex = /min-height:\s*(\d+)px\s*;/g;
     const heights = [...css.matchAll(heightRegex)].map(m => parseInt(m[1], 10));
     if (heights.length > 0) {
       this.state.geometry.headerbar_min_height = heights[0];
     }
 
-    const paddingRegex = /padding-top:\s*(\d+)px\s*!important;/g;
+    const paddingRegex = /padding-top:\s*(\d+)px\s*;/g;
     const paddingMatch = paddingRegex.exec(css);
     if (paddingMatch) {
       this.state.geometry.headerbar_padding_top = parseInt(paddingMatch[1], 10);
