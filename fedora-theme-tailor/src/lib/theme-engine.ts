@@ -33,6 +33,7 @@ export interface GeometryTokens {
   gtk3_button_padding: number;
   gtk3_button_margin: number;
   gtk3_title_min_height: number;
+  context_menu_min_width: number;
   disable_overshoot: boolean;
 }
 
@@ -43,7 +44,7 @@ export interface ShellTokens {
   accent: string;
   dock: string;
 }
-export interface ThemeEffects { glass: boolean; motion: boolean }
+export interface ThemeEffects { glass: boolean; motion: boolean; contextMenuTransparent: boolean }
 
 export interface ThemeState {
   colors: ColorTokens;
@@ -56,7 +57,7 @@ export interface ThemeState {
 export const DEFAULT_SHELL: ShellTokens = {
   panel: '#1e232d', menu: '#141414', text: '#ffffff', accent: '#4a9eff', dock: '#1e232d',
 };
-export const DEFAULT_EFFECTS: ThemeEffects = { glass: false, motion: true };
+export const DEFAULT_EFFECTS: ThemeEffects = { glass: false, motion: true, contextMenuTransparent: false };
 
 export const DEFAULT_COLORS: ColorTokens = {
   window_bg_color: '#000000',
@@ -93,6 +94,7 @@ export const DEFAULT_GEOMETRY: GeometryTokens = {
   gtk3_button_padding: 3,
   gtk3_button_margin: 0,
   gtk3_title_min_height: 15,
+  context_menu_min_width: 180,
   disable_overshoot: true,
 };
 
@@ -152,6 +154,7 @@ export class ThemeEngine {
   getCSS(): string {
     const { colors, geometry } = this.state;
     const px = (v: number) => `${v}px`;
+    const contextMenuBackground = this.state.effects.contextMenuTransparent ? 'transparent' : '@context_menu_bg_color';
 
     const colorDefs = COLOR_TOKEN_KEYS.map(key =>
       `@define-color ${key} ${colors[key]};`
@@ -198,7 +201,8 @@ popover contents {
 menu,
 .menu,
 popover.menu {
-  background-color: @context_menu_bg_color;
+  background-color: ${contextMenuBackground};
+  min-width: ${px(geometry.context_menu_min_width)};
   color: @headerbar_fg_color;
   border: 1px solid alpha(@headerbar_fg_color, 0.14);
   border-radius: 14px;
@@ -216,6 +220,10 @@ menuitem:hover,
 popover.menu modelbutton:hover {
   background-color: alpha(@headerbar_fg_color, 0.10);
   color: @headerbar_fg_color;
+}
+
+popover.menu contents {
+  background-color: ${contextMenuBackground};
 }
 
 menu separator,
