@@ -265,13 +265,13 @@ scrolledwindow undershoot {
   loadPreset(name: string): boolean {
     const preset = BUILTIN_PRESETS[name];
     if (!preset) return false;
-    this.state = { ...preset };
+    this.state = { ...preset, colors: { ...preset.colors }, geometry: { ...preset.geometry } };
     this.notify();
     return true;
   }
 
   savePreset(name: string): void {
-    BUILTIN_PRESETS[name] = { ...this.state, presetName: name };
+    BUILTIN_PRESETS[name] = { ...this.state, colors: { ...this.state.colors }, geometry: { ...this.state.geometry }, presetName: name };
   }
 
   getPresets(): string[] {
