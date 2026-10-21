@@ -31,7 +31,6 @@ const GEOMETRY_CONTROLS: Array<{
 
 export class UIController {
   engine: ThemeEngine;
-  unsub: (() => void) | null = null;
 
   constructor(engine: ThemeEngine) {
     this.engine = engine;
