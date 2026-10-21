@@ -506,6 +506,19 @@ popover.menu contents {
     return Object.keys(BUILTIN_PRESETS);
   }
 
+  async createBackup(): Promise<void> {
+    const { copyFile, exists, BaseDirectory } = await import('@tauri-apps/plugin-fs');
+    const id = new Date().toISOString().replace(/[:.]/g, '-');
+    let saved = false;
+    for (const [path, baseDir] of [['gtk-4.0/gtk.css', BaseDirectory.Config], ['gtk-3.0/gtk.css', BaseDirectory.Config], ['.themes/FedoraThemeTailor/gnome-shell/gnome-shell.css', BaseDirectory.Home]] as const) {
+      if (await exists(path, { baseDir })) {
+        await copyFile(path, `${path}.bak.${id}`, { fromPathBaseDir: baseDir, toPathBaseDir: baseDir });
+        saved = true;
+      }
+    }
+    if (!saved) throw new Error('No installed theme files were found to back up.');
+  }
+
   async applyTheme(): Promise<void> {
     const { writeTextFile, BaseDirectory, mkdir, readTextFile, exists } = await import('@tauri-apps/plugin-fs');
     const css = this.getCSS();
