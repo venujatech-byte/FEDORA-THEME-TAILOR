@@ -187,20 +187,26 @@ dialog,
 }
 
 popover,
-popover contents,
 menu,
 .menu,
-popover.menu,
-popover.menu contents,
-popover.menu modelbutton {
+popover.menu {
   background-color: @popover_bg_color;
   color: @window_fg_color;
-  border-color: @headerbar_border_color;
+  border: 1px solid @headerbar_border_color;
+  border-radius: 8px;
   box-shadow: 0 8px 24px alpha(#000000, 0.35);
+}
+
+popover contents,
+popover.menu contents {
+  background-color: @popover_bg_color;
+  color: @window_fg_color;
 }
 
 menuitem,
 popover.menu modelbutton {
+  background-color: transparent;
+  color: @window_fg_color;
   padding: 6px 10px;
 }
 
