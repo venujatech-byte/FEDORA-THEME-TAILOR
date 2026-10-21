@@ -281,15 +281,15 @@ scrolledwindow undershoot {
     this.state = { colors: { ...DEFAULT_COLORS }, geometry: { ...DEFAULT_GEOMETRY }, shell: { ...DEFAULT_SHELL }, presetName: 'Custom' };
     try {
       const { readTextFile, BaseDirectory } = await import('@tauri-apps/plugin-fs');
-      const gtk4Path = '.config/gtk-4.0/gtk.css';
-      const gtk3Path = '.config/gtk-3.0/gtk.css';
+      const gtk4Path = 'gtk-4.0/gtk.css';
+      const gtk3Path = 'gtk-3.0/gtk.css';
 
       let cssContent = '';
       try {
-        cssContent = await readTextFile(gtk4Path, { baseDir: BaseDirectory.Home });
+        cssContent = await readTextFile(gtk4Path, { baseDir: BaseDirectory.Config });
       } catch {
         try {
-          cssContent = await readTextFile(gtk3Path, { baseDir: BaseDirectory.Home });
+          cssContent = await readTextFile(gtk3Path, { baseDir: BaseDirectory.Config });
         } catch {
           return;
         }
@@ -384,52 +384,52 @@ scrolledwindow undershoot {
     const { writeTextFile, BaseDirectory, mkdir, readTextFile, exists } = await import('@tauri-apps/plugin-fs');
     const css = this.getCSS();
 
-    const gtk4Dir = '.config/gtk-4.0';
-    const gtk3Dir = '.config/gtk-3.0';
+    const gtk4Dir = 'gtk-4.0';
+    const gtk3Dir = 'gtk-3.0';
     const gtk4Path = `${gtk4Dir}/gtk.css`;
     const gtk3Path = `${gtk3Dir}/gtk.css`;
     const shellDir = '.themes/FedoraThemeTailor/gnome-shell';
     const shellPath = `${shellDir}/gnome-shell.css`;
 
-    await mkdir(gtk4Dir, { baseDir: BaseDirectory.Home, recursive: true });
-    await mkdir(gtk3Dir, { baseDir: BaseDirectory.Home, recursive: true });
+    await mkdir(gtk4Dir, { baseDir: BaseDirectory.Config, recursive: true });
+    await mkdir(gtk3Dir, { baseDir: BaseDirectory.Config, recursive: true });
     await mkdir(shellDir, { baseDir: BaseDirectory.Home, recursive: true });
 
     const backupId = new Date().toISOString().replace(/[:.]/g, '-');
-    for (const path of [gtk4Path, gtk3Path, shellPath]) {
+    for (const [path, baseDir] of [[gtk4Path, BaseDirectory.Config], [gtk3Path, BaseDirectory.Config], [shellPath, BaseDirectory.Home]] as const) {
       const original = `${path}.original`;
       const absent = `${path}.original.absent`;
-      if (!await exists(original, { baseDir: BaseDirectory.Home }) && !await exists(absent, { baseDir: BaseDirectory.Home })) {
-        if (await exists(path, { baseDir: BaseDirectory.Home })) {
-          const existing = await readTextFile(path, { baseDir: BaseDirectory.Home });
-          await writeTextFile(original, existing, { baseDir: BaseDirectory.Home });
-        } else await writeTextFile(absent, '', { baseDir: BaseDirectory.Home });
+      if (!await exists(original, { baseDir }) && !await exists(absent, { baseDir })) {
+        if (await exists(path, { baseDir })) {
+          const existing = await readTextFile(path, { baseDir });
+          await writeTextFile(original, existing, { baseDir });
+        } else await writeTextFile(absent, '', { baseDir });
       }
-      if (await exists(path, { baseDir: BaseDirectory.Home })) {
-        const existing = await readTextFile(path, { baseDir: BaseDirectory.Home });
-        await writeTextFile(`${path}.bak.${backupId}`, existing, { baseDir: BaseDirectory.Home });
+      if (await exists(path, { baseDir })) {
+        const existing = await readTextFile(path, { baseDir });
+        await writeTextFile(`${path}.bak.${backupId}`, existing, { baseDir });
       }
     }
 
-    await writeTextFile(gtk4Path, css, { baseDir: BaseDirectory.Home });
-    await writeTextFile(gtk3Path, css, { baseDir: BaseDirectory.Home });
+    await writeTextFile(gtk4Path, css, { baseDir: BaseDirectory.Config });
+    await writeTextFile(gtk3Path, css, { baseDir: BaseDirectory.Config });
     await writeTextFile(shellPath, this.getShellCSS(), { baseDir: BaseDirectory.Home });
   }
 
   async restoreOriginal(): Promise<void> {
     const { BaseDirectory, readTextFile, writeTextFile, exists, remove } = await import('@tauri-apps/plugin-fs');
-    const gtk4Path = '.config/gtk-4.0/gtk.css';
-    const gtk3Path = '.config/gtk-3.0/gtk.css';
+    const gtk4Path = 'gtk-4.0/gtk.css';
+    const gtk3Path = 'gtk-3.0/gtk.css';
     const shellPath = '.themes/FedoraThemeTailor/gnome-shell/gnome-shell.css';
 
     let restored = false;
-    for (const path of [gtk4Path, gtk3Path, shellPath]) {
-      if (await exists(`${path}.original`, { baseDir: BaseDirectory.Home })) {
-        const original = await readTextFile(`${path}.original`, { baseDir: BaseDirectory.Home });
-        await writeTextFile(path, original, { baseDir: BaseDirectory.Home });
+    for (const [path, baseDir] of [[gtk4Path, BaseDirectory.Config], [gtk3Path, BaseDirectory.Config], [shellPath, BaseDirectory.Home]] as const) {
+      if (await exists(`${path}.original`, { baseDir })) {
+        const original = await readTextFile(`${path}.original`, { baseDir });
+        await writeTextFile(path, original, { baseDir });
         restored = true;
-      } else if (await exists(`${path}.original.absent`, { baseDir: BaseDirectory.Home })) {
-        if (await exists(path, { baseDir: BaseDirectory.Home })) await remove(path, { baseDir: BaseDirectory.Home });
+      } else if (await exists(`${path}.original.absent`, { baseDir })) {
+        if (await exists(path, { baseDir })) await remove(path, { baseDir });
         restored = true;
       }
     }
@@ -440,20 +440,20 @@ scrolledwindow undershoot {
 
   async rollback(): Promise<void> {
     const { readDir, copyFile, BaseDirectory } = await import('@tauri-apps/plugin-fs');
-    const gtk4Dir = '.config/gtk-4.0';
-    const gtk3Dir = '.config/gtk-3.0';
+    const gtk4Dir = 'gtk-4.0';
+    const gtk3Dir = 'gtk-3.0';
     const shellDir = '.themes/FedoraThemeTailor/gnome-shell';
 
     let restored = false;
-    for (const dir of [gtk4Dir, gtk3Dir, shellDir]) {
+    for (const [dir, baseDir] of [[gtk4Dir, BaseDirectory.Config], [gtk3Dir, BaseDirectory.Config], [shellDir, BaseDirectory.Home]] as const) {
       try {
-        const files = await readDir(dir, { baseDir: BaseDirectory.Home });
+        const files = await readDir(dir, { baseDir });
         const backups = files
           .filter(f => f.name.startsWith(dir === shellDir ? 'gnome-shell.css.bak.' : 'gtk.css.bak.'))
           .sort((a, b) => b.name.localeCompare(a.name));
 
         if (backups.length > 0) {
-          await copyFile(`${dir}/${backups[0].name}`, `${dir}/${dir === shellDir ? 'gnome-shell.css' : 'gtk.css'}`, { fromPathBaseDir: BaseDirectory.Home, toPathBaseDir: BaseDirectory.Home });
+          await copyFile(`${dir}/${backups[0].name}`, `${dir}/${dir === shellDir ? 'gnome-shell.css' : 'gtk.css'}`, { fromPathBaseDir: baseDir, toPathBaseDir: baseDir });
           restored = true;
         }
       } catch {}
