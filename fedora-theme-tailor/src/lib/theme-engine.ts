@@ -296,11 +296,12 @@ scrolledwindow undershoot {
     const backupId = new Date().toISOString().replace(/[:.]/g, '-');
     for (const path of [gtk4Path, gtk3Path]) {
       const original = `${path}.original`;
-      if (!await exists(original, { baseDir: BaseDirectory.Home })) {
+      const absent = `${path}.original.absent`;
+      if (!await exists(original, { baseDir: BaseDirectory.Home }) && !await exists(absent, { baseDir: BaseDirectory.Home })) {
         if (await exists(path, { baseDir: BaseDirectory.Home })) {
           const existing = await readTextFile(path, { baseDir: BaseDirectory.Home });
           await writeTextFile(original, existing, { baseDir: BaseDirectory.Home });
-        } else await writeTextFile(`${path}.original.absent`, '', { baseDir: BaseDirectory.Home });
+        } else await writeTextFile(absent, '', { baseDir: BaseDirectory.Home });
       }
       if (await exists(path, { baseDir: BaseDirectory.Home })) {
         const existing = await readTextFile(path, { baseDir: BaseDirectory.Home });
