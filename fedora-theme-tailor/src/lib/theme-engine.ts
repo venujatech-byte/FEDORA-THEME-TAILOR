@@ -197,6 +197,7 @@ scrolledwindow undershoot {
   }
 
   async loadCurrentTheme(): Promise<void> {
+    this.state = { colors: { ...DEFAULT_COLORS }, geometry: { ...DEFAULT_GEOMETRY }, presetName: 'Custom' };
     try {
       const { readTextFile, BaseDirectory } = await import('@tauri-apps/plugin-fs');
       const configDir = await import('@tauri-apps/api/path').then(m => m.configDir());
@@ -294,11 +295,15 @@ scrolledwindow undershoot {
 
     const backupId = new Date().toISOString().replace(/[:.]/g, '-');
     for (const path of [gtk4Path, gtk3Path]) {
+      const original = `${path}.original`;
+      if (!await exists(original, { baseDir: BaseDirectory.Home })) {
+        if (await exists(path, { baseDir: BaseDirectory.Home })) {
+        const existing = await readTextFile(path, { baseDir: BaseDirectory.Home });
+          await writeTextFile(original, existing, { baseDir: BaseDirectory.Home });
+        } else await writeTextFile(`${path}.original.absent`, '', { baseDir: BaseDirectory.Home });
+      }
       if (await exists(path, { baseDir: BaseDirectory.Home })) {
         const existing = await readTextFile(path, { baseDir: BaseDirectory.Home });
-        if (!await exists(`${path}.original`, { baseDir: BaseDirectory.Home })) {
-          await writeTextFile(`${path}.original`, existing, { baseDir: BaseDirectory.Home });
-        }
         await writeTextFile(`${path}.bak.${backupId}`, existing, { baseDir: BaseDirectory.Home });
       }
     }
@@ -308,19 +313,24 @@ scrolledwindow undershoot {
   }
 
   async restoreOriginal(): Promise<void> {
-    const { BaseDirectory, readTextFile, writeTextFile, exists } = await import('@tauri-apps/plugin-fs');
+    const { BaseDirectory, readTextFile, writeTextFile, exists, remove } = await import('@tauri-apps/plugin-fs');
     const configDir = await import('@tauri-apps/api/path').then(m => m.configDir());
 
     const gtk4Path = `${configDir}/gtk-4.0/gtk.css`;
     const gtk3Path = `${configDir}/gtk-3.0/gtk.css`;
 
-    const paths = await Promise.all([gtk4Path, gtk3Path].map(async path =>
-      await exists(`${path}.original`, { baseDir: BaseDirectory.Home }) ? path : null));
-    if (paths.every(path => !path)) throw new Error('No original theme backup exists yet.');
-    for (const path of paths.filter((path): path is string => !!path)) {
-      const original = await readTextFile(`${path}.original`, { baseDir: BaseDirectory.Home });
-      await writeTextFile(path, original, { baseDir: BaseDirectory.Home });
+    let restored = false;
+    for (const path of [gtk4Path, gtk3Path]) {
+      if (await exists(`${path}.original`, { baseDir: BaseDirectory.Home })) {
+        const original = await readTextFile(`${path}.original`, { baseDir: BaseDirectory.Home });
+        await writeTextFile(path, original, { baseDir: BaseDirectory.Home });
+        restored = true;
+      } else if (await exists(`${path}.original.absent`, { baseDir: BaseDirectory.Home })) {
+        if (await exists(path, { baseDir: BaseDirectory.Home })) await remove(path, { baseDir: BaseDirectory.Home });
+        restored = true;
+      }
     }
+    if (!restored) throw new Error('No original theme backup exists yet.');
 
     await this.loadCurrentTheme();
   }
