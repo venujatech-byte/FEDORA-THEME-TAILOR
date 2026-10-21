@@ -279,7 +279,7 @@ scrolledwindow undershoot {
   }
 
   async applyTheme(themeName?: string): Promise<void> {
-    const { writeTextFile, BaseDirectory, mkdir, readTextFile } = await import('@tauri-apps/plugin-fs');
+    const { writeTextFile, BaseDirectory, mkdir, readTextFile, exists } = await import('@tauri-apps/plugin-fs');
     const configDir = await import('@tauri-apps/api/path').then(m => m.configDir());
 
     const css = this.getCSS();
@@ -294,15 +294,16 @@ scrolledwindow undershoot {
       await mkdir(gtk3Dir, { baseDir: BaseDirectory.Home, recursive: true });
     } catch {}
 
-    try {
-      const existing4 = await readTextFile(gtk4Path, { baseDir: BaseDirectory.Home });
-      await writeTextFile(`${gtk4Path}.original`, existing4, { baseDir: BaseDirectory.Home });
-    } catch {}
-
-    try {
-      const existing3 = await readTextFile(gtk3Path, { baseDir: BaseDirectory.Home });
-      await writeTextFile(`${gtk3Path}.original`, existing3, { baseDir: BaseDirectory.Home });
-    } catch {}
+    const backupId = new Date().toISOString().replace(/[:.]/g, '-');
+    for (const path of [gtk4Path, gtk3Path]) {
+      if (await exists(path, { baseDir: BaseDirectory.Home })) {
+        const existing = await readTextFile(path, { baseDir: BaseDirectory.Home });
+        if (!await exists(`${path}.original`, { baseDir: BaseDirectory.Home })) {
+          await writeTextFile(`${path}.original`, existing, { baseDir: BaseDirectory.Home });
+        }
+        await writeTextFile(`${path}.bak.${backupId}`, existing, { baseDir: BaseDirectory.Home });
+      }
+    }
 
     if (themeName) {
       const safeName = themeName.replace(/[^a-zA-Z0-9-_]/g, '-');
