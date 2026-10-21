@@ -578,7 +578,7 @@ html, body, #app {
 .action-bar {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   padding: 12px;
   border-top: 1px solid var(--border);
@@ -586,6 +586,12 @@ html, body, #app {
 }
 
 #action-status { flex: 1 1 100%; min-height: 18px; color: var(--fg-muted); }
+.action-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.action-help, .action-choice small { color: var(--fg-muted); font-size: 11px; font-weight: 400; text-align: left; }
+.action-heading { flex-basis: 100%; color: var(--fg-muted); font-size: 12px; font-weight: 600; }
+.action-list { display: grid; width: 100%; gap: 6px; }
+.action-choice { align-items: flex-start; flex-direction: column; gap: 3px; width: 100%; text-align: left; }
+.action-choice strong { font-size: 12px; font-weight: 500; }
 
 .scrollbar-thin::-webkit-scrollbar {
   width: 6px;
