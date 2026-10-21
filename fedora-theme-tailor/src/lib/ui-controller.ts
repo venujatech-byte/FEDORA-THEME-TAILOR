@@ -65,7 +65,7 @@ export class UIController {
     const tabs = [['gtk', 'GTK apps'], ['shell', 'GNOME Shell'], ['recovery', 'Presets & backups']];
     const body = this.active === 'gtk' ? `
       <p class="intro">Choose how GTK 3 and GTK 4 apps look. Your original files are backed up the first time you apply.</p>
-      ${Object.entries(groups).map(([name, keys]) => `<section><h3>${name}</h3>${colorRows(keys.map(k => [k.replace(/_color/g, '').replace(/_/g, ' '), k, c[k]]))}</section>`).join('')}
+      ${Object.entries(groups).map(([name, keys]) => `<section><h3>${name}</h3>${colorRows(keys.map(k => [this.colorLabel(k), k, c[k]]))}</section>`).join('')}
       <section><h3>Size & spacing</h3>${geometry.map(([key, label, min, max]) => `<label class="range-row"><span>${label}</span><input type="range" min="${min}" max="${max}" value="${g[key]}" data-geometry="${key}"><output>${g[key]} px</output></label>`).join('')}
       <label class="check-row"><input type="checkbox" data-geometry="disable_overshoot" ${g.disable_overshoot ? 'checked' : ''}> Hide scroll edge glow</label></section>
       <section><h3>Current preset</h3><p>${this.escape(presetName)}</p><button class="button" data-action="reset">Reset to starter theme</button></section>
@@ -90,6 +90,7 @@ export class UIController {
   }
 
   escape(value: string): string { return value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!); }
+  colorLabel(key: keyof ColorTokens): string { return key.replace(/_bg_color$/, ' background').replace(/_fg_color$/, ' text').replace(/_color$/, '').replace(/_/g, ' ').replace('headerbar', 'title bar').replace(/^view /, 'content '); }
   async run(pending: string, success: string, action: () => Promise<void>): Promise<void> {
     const status = document.getElementById('action-status'); if (status) status.textContent = pending;
     try { await action(); this.render(); const result = document.getElementById('action-status'); if (result) result.textContent = success; }
