@@ -1,4 +1,4 @@
-import { ThemeEngine, ColorTokens, GeometryTokens, DEFAULT_COLORS, DEFAULT_GEOMETRY } from './theme-engine';
+import { ThemeEngine, ColorTokens, GeometryTokens } from './theme-engine';
 
 const COLOR_GROUPS: Record<string, (keyof ColorTokens)[]> = {
   'Window & View': ['window_bg_color', 'window_fg_color', 'view_bg_color', 'view_fg_color'],
@@ -78,20 +78,18 @@ export class UIController {
         this.runAction('Applying theme…', 'Theme applied. Restart GTK apps to see every change.', () => this.engine.applyTheme());
       }
       if (target.dataset.action === 'restore-original') {
-        if (confirm('Restore original Fedora theme? This will overwrite current gtk.css')) {
+        if (confirm('Restore the GTK files as they were before this app was first applied? Current GTK CSS will be replaced.')) {
           this.runAction('Restoring original theme…', 'Original theme restored.', () => this.engine.restoreOriginal());
         }
       }
       if (target.dataset.action === 'rollback') {
-        this.runAction('Rolling back…', 'Previous theme restored.', () => this.engine.rollback());
+        this.runAction('Undoing the last apply…', 'Last apply undone.', () => this.engine.rollback());
       }
       if (target.dataset.action === 'flatpak') {
-        this.runAction('Setting up Flatpak access…', 'Flatpak access configured.', () => this.engine.setupFlatpakOverrides());
+        this.runAction('Enabling Flatpak themes…', 'Flatpak apps can now read your GTK theme files.', () => this.engine.setupFlatpakOverrides());
       }
       if (target.dataset.action === 'reset') {
-        this.engine.state.colors = { ...DEFAULT_COLORS };
-        this.engine.state.geometry = { ...DEFAULT_GEOMETRY };
-        this.engine.state.presetName = 'Custom';
+        this.engine.loadPreset('Fedora OLED Slate Compact');
         this.render();
       }
       if (target.dataset.presetAction === 'delete') {
@@ -145,7 +143,7 @@ export class UIController {
                 <div class="preset-item ${name === presetName ? 'active' : ''}" role="option" aria-selected="${name === presetName}">
                   <span class="preset-name">${this.escapeHTML(name)}</span>
                   <div class="preset-actions">
-                    <button class="preset-btn" data-preset-action="load" data-preset-name="${this.escapeHTML(name)}" aria-label="Load ${this.escapeHTML(name)}" title="Load">↘</button>
+              <button class="preset-btn" data-preset-action="load" data-preset-name="${this.escapeHTML(name)}" aria-label="Load ${this.escapeHTML(name)}" title="Load">Load</button>
                     ${name !== 'Fedora OLED Slate Compact' ? `
                       <button class="preset-btn danger" data-preset-action="delete" data-preset-name="${this.escapeHTML(name)}" aria-label="Delete ${this.escapeHTML(name)}" title="Delete">✕</button>
                     ` : ''}
@@ -155,14 +153,17 @@ export class UIController {
             </div>
             <div style="margin-top: 12px; display: flex; gap: 8px;">
               <input type="text" id="preset-name-input" class="color-input" style="flex: 1;" placeholder="New preset name" aria-label="Preset name">
-              <button class="btn primary" data-preset-action="save" aria-label="Save preset">Save</button>
+              <button class="btn primary" data-preset-action="save" aria-label="Save preset">Save preset</button>
             </div>
           </section>
         </div>
         <div class="action-bar">
-          <span id="action-status" role="status" aria-live="polite">Edits are preview only until applied.</span>
-          <button class="btn danger" data-action="reset" aria-label="Reset to defaults">Reset</button>
-          <button class="btn primary" data-action="apply" aria-label="Apply theme">Apply</button>
+          <span id="action-status" role="status" aria-live="polite">Edits change the preview; click Apply theme to save them.</span>
+          <div class="action-buttons">
+            <button class="btn danger" data-action="reset" aria-label="Reset to starter theme">Reset to starter</button>
+            <button class="btn primary" data-action="apply" aria-label="Apply theme to GTK apps">Apply theme</button>
+          </div>
+          <small class="action-help">Reset discards your edits. Apply updates GTK 3 and GTK 4 themes.</small>
         </div>
       </div>
 
@@ -183,10 +184,19 @@ export class UIController {
             </div>
           </section>
         </div>
-        <div class="action-bar">
-          <button class="btn" data-action="flatpak" aria-label="Setup Flatpak overrides">Flatpak Overrides</button>
-          <button class="btn" data-action="rollback" aria-label="Rollback to last backup">Rollback</button>
-          <button class="btn danger" data-action="restore-original" aria-label="Restore original Fedora theme">Restore Original</button>
+        <div class="action-bar recovery-actions">
+          <h3 class="action-heading">Backups &amp; Flatpak apps</h3>
+          <div class="action-list">
+            <button class="btn action-choice" data-action="flatpak" aria-label="Allow Flatpak apps to read GTK theme files">
+              <strong>Enable Flatpak themes</strong><small>Let Flatpak apps read your GTK theme files.</small>
+            </button>
+            <button class="btn action-choice" data-action="rollback" aria-label="Undo the last theme apply">
+              <strong>Undo last apply</strong><small>Return to the theme saved just before the last apply.</small>
+            </button>
+            <button class="btn danger action-choice" data-action="restore-original" aria-label="Restore the first saved GTK theme">
+              <strong>Restore first backup</strong><small>Return to the GTK files from before this app was first used.</small>
+            </button>
+          </div>
         </div>
       </div>
 
