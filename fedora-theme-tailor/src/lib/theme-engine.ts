@@ -187,9 +187,27 @@ dialog,
 }
 
 popover,
-popover contents {
+popover contents,
+menu,
+.menu,
+popover.menu,
+popover.menu contents,
+popover.menu modelbutton {
   background-color: @popover_bg_color;
   color: @window_fg_color;
+  border-color: @headerbar_border_color;
+  box-shadow: 0 8px 24px alpha(#000000, 0.35);
+}
+
+menuitem,
+popover.menu modelbutton {
+  padding: 6px 10px;
+}
+
+menuitem:hover,
+popover.menu modelbutton:hover {
+  background-color: alpha(@headerbar_bg_color, 0.8);
+  color: @headerbar_fg_color;
 }
 
 /* Titlebar & Tabbar Unification */
