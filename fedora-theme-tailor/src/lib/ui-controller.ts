@@ -7,9 +7,9 @@ const groups: Record<string, (keyof ColorTokens)[]> = {
   'Sidebars': ['sidebar_bg_color', 'sidebar_fg_color', 'sidebar_backdrop_color', 'sidebar_border_color', 'secondary_sidebar_bg_color', 'secondary_sidebar_backdrop_color'],
 };
 const geometry: Array<[keyof GeometryTokens, string, number, number]> = [
-  ['headerbar_min_height', 'Title bar height', 20, 46], ['headerbar_padding_top', 'Top padding', 0, 8], ['headerbar_padding_bottom', 'Bottom padding', 0, 8],
-  ['gtk4_button_min_height', 'GTK 4 control height', 15, 24], ['gtk4_button_min_width', 'GTK 4 control width', 15, 24], ['gtk4_button_padding', 'GTK 4 control padding', 0, 8], ['gtk4_title_min_height', 'GTK 4 title height', 15, 24],
-  ['gtk3_button_min_height', 'GTK 3 control height', 12, 20], ['gtk3_button_min_width', 'GTK 3 control width', 12, 20], ['gtk3_button_padding', 'GTK 3 control padding', 0, 8], ['gtk3_title_min_height', 'GTK 3 title height', 12, 20],
+  ['headerbar_min_height', 'Title bar minimum height', 20, 46], ['headerbar_padding_top', 'Top padding', 0, 8], ['headerbar_padding_bottom', 'Bottom padding', 0, 8],
+  ['gtk4_button_min_height', 'GTK 4 title-button minimum height', 15, 24], ['gtk4_button_min_width', 'GTK 4 title-button minimum width', 15, 24], ['gtk4_button_padding', 'GTK 4 title-button padding', 0, 8], ['gtk4_title_min_height', 'GTK 4 title text minimum height', 15, 24],
+  ['gtk3_button_min_height', 'GTK 3 title-button minimum height', 12, 20], ['gtk3_button_min_width', 'GTK 3 title-button minimum width', 12, 20], ['gtk3_button_padding', 'GTK 3 title-button padding', 0, 8], ['gtk3_title_min_height', 'GTK 3 title text minimum height', 12, 20],
 ];
 const shellNames: Record<keyof ShellTokens, string> = { panel: 'Top bar', menu: 'Menus & quick settings', text: 'Shell text', accent: 'Highlights', dock: 'Dock' };
 
@@ -66,7 +66,7 @@ export class UIController {
     const body = this.active === 'gtk' ? `
       <p class="intro">Choose how GTK 3 and GTK 4 apps look. Your original files are backed up the first time you apply.</p>
       ${Object.entries(groups).map(([name, keys]) => `<section><h3>${name}</h3>${colorRows(keys.map(k => [this.colorLabel(k), k, c[k]]))}</section>`).join('')}
-      <section><h3>Size & spacing</h3>${geometry.map(([key, label, min, max]) => `<label class="range-row"><span>${label}</span><input type="range" min="${min}" max="${max}" value="${g[key]}" data-geometry="${key}"><output>${g[key]} px</output></label>`).join('')}
+      <section><h3>Size & spacing</h3>${geometry.map(([key, label, min, max]) => `<label class="range-row"><span>${label}</span><input type="range" min="${min}" max="${max}" value="${g[key]}" data-geometry="${key}"><output>${g[key]} px</output></label>`).join('')}<p>These values set minimum sizes. GTK may grow controls to fit an app. Restart apps after applying to see changes.</p>
       <label class="check-row"><input type="checkbox" data-geometry="disable_overshoot" ${g.disable_overshoot ? 'checked' : ''}> Hide scroll edge glow</label></section>
       <section><h3>Current preset</h3><p>${this.escape(presetName)}</p><button class="button" data-action="reset">Reset to starter theme</button></section>
       <footer><button class="button primary" data-action="apply">Apply GTK + Shell styles</button><small>GTK apps need a restart. Libadwaita apps may only partly follow custom CSS.</small></footer>`
