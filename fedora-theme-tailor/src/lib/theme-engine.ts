@@ -340,6 +340,16 @@ scrolledwindow undershoot {
   opacity: 0;
 }
 ` : ''}
+
+/* Force the visible GTK 3 menu and GTK 4 popover surface to follow the toggle. */
+menu,
+.menu,
+.context-menu,
+popover.menu,
+popover.menu > contents,
+popover.menu contents {
+  background-color: ${contextMenuBackground} !important;
+}
 `.trim();
 
     return css;
