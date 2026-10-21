@@ -40,23 +40,28 @@ export interface GeometryTokens {
 export interface ShellTokens {
   panel: string;
   menu: string;
+  quickSettings: string;
+  notifications: string;
   text: string;
   accent: string;
   dock: string;
 }
+export interface ShellGeometry { panelHeight: number; quickSettingsRadius: number; dockRadius: number }
 export interface ThemeEffects { glass: boolean; motion: boolean; contextMenuTransparent: boolean }
 
 export interface ThemeState {
   colors: ColorTokens;
   geometry: GeometryTokens;
   shell: ShellTokens;
+  shellGeometry: ShellGeometry;
   effects: ThemeEffects;
   presetName: string;
 }
 
 export const DEFAULT_SHELL: ShellTokens = {
-  panel: '#1e232d', menu: '#141414', text: '#ffffff', accent: '#4a9eff', dock: '#1e232d',
+  panel: '#1e232d', menu: '#141414', quickSettings: '#1e232d', notifications: '#141414', text: '#ffffff', accent: '#4a9eff', dock: '#1e232d',
 };
+export const DEFAULT_SHELL_GEOMETRY: ShellGeometry = { panelHeight: 32, quickSettingsRadius: 24, dockRadius: 14 };
 export const DEFAULT_EFFECTS: ThemeEffects = { glass: false, motion: true, contextMenuTransparent: false };
 
 export const DEFAULT_COLORS: ColorTokens = {
@@ -103,20 +108,21 @@ export const BUILTIN_PRESETS: Record<string, ThemeState> = {
     colors: DEFAULT_COLORS,
     geometry: DEFAULT_GEOMETRY,
     shell: DEFAULT_SHELL,
+    shellGeometry: DEFAULT_SHELL_GEOMETRY,
     effects: DEFAULT_EFFECTS,
     presetName: 'Fedora OLED Slate Compact',
   },
   'Fedora Blue': {
     colors: { ...DEFAULT_COLORS, context_menu_bg_color: '#174f99', headerbar_bg_color: '#1a5fb4', headerbar_border_color: '#1a5fb4', headerbar_backdrop_color: '#174f99', sidebar_bg_color: '#1a5fb4', sidebar_border_color: '#1a5fb4' },
-    geometry: DEFAULT_GEOMETRY, shell: { ...DEFAULT_SHELL, panel: '#1a5fb4', accent: '#3584e4' }, effects: DEFAULT_EFFECTS, presetName: 'Fedora Blue',
+    geometry: DEFAULT_GEOMETRY, shell: { ...DEFAULT_SHELL, panel: '#1a5fb4', quickSettings: '#1a5fb4', accent: '#3584e4' }, shellGeometry: DEFAULT_SHELL_GEOMETRY, effects: DEFAULT_EFFECTS, presetName: 'Fedora Blue',
   },
   'Violet Night': {
     colors: { ...DEFAULT_COLORS, context_menu_bg_color: '#241c30', headerbar_bg_color: '#30233f', headerbar_border_color: '#30233f', headerbar_backdrop_color: '#261b34', sidebar_bg_color: '#241c30', sidebar_border_color: '#241c30' },
-    geometry: DEFAULT_GEOMETRY, shell: { ...DEFAULT_SHELL, panel: '#241c30', menu: '#17121e', accent: '#c061cb', dock: '#241c30' }, effects: DEFAULT_EFFECTS, presetName: 'Violet Night',
+    geometry: DEFAULT_GEOMETRY, shell: { ...DEFAULT_SHELL, panel: '#241c30', menu: '#17121e', quickSettings: '#241c30', accent: '#c061cb', dock: '#241c30' }, shellGeometry: DEFAULT_SHELL_GEOMETRY, effects: DEFAULT_EFFECTS, presetName: 'Violet Night',
   },
   'Glass Night': {
     colors: { ...DEFAULT_COLORS, window_bg_color: '#101722', view_bg_color: '#101722', card_bg_color: '#202b3a', dialog_bg_color: '#202b3a', popover_bg_color: '#202b3a', context_menu_bg_color: '#202b3a', headerbar_bg_color: '#202b3a', headerbar_border_color: '#202b3a', headerbar_backdrop_color: '#182230', sidebar_bg_color: '#182230', sidebar_border_color: '#182230' },
-    geometry: DEFAULT_GEOMETRY, shell: { ...DEFAULT_SHELL, panel: '#182230', menu: '#202b3a', dock: '#182230', accent: '#62a0ea' }, effects: { glass: true, motion: true, contextMenuTransparent: false }, presetName: 'Glass Night',
+    geometry: DEFAULT_GEOMETRY, shell: { ...DEFAULT_SHELL, panel: '#182230', menu: '#202b3a', quickSettings: '#202b3a', dock: '#182230', accent: '#62a0ea' }, shellGeometry: DEFAULT_SHELL_GEOMETRY, effects: { glass: true, motion: true, contextMenuTransparent: false }, presetName: 'Glass Night',
   },
 };
 
@@ -128,6 +134,7 @@ export class ThemeEngine {
     colors: { ...DEFAULT_COLORS },
     geometry: { ...DEFAULT_GEOMETRY },
     shell: { ...DEFAULT_SHELL },
+    shellGeometry: { ...DEFAULT_SHELL_GEOMETRY },
     effects: { ...DEFAULT_EFFECTS },
     presetName: 'Custom',
   };
@@ -137,7 +144,7 @@ export class ThemeEngine {
     try {
       const saved = JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY) || '{}') as Record<string, ThemeState>;
       Object.entries(saved).forEach(([name, preset]) => {
-        if (preset?.colors && preset?.geometry && !['Fedora OLED Slate Compact', 'Fedora Blue', 'Violet Night', 'Glass Night'].includes(name)) BUILTIN_PRESETS[name] = { ...preset, shell: { ...DEFAULT_SHELL, ...preset.shell }, effects: { ...DEFAULT_EFFECTS, ...preset.effects } };
+        if (preset?.colors && preset?.geometry && !['Fedora OLED Slate Compact', 'Fedora Blue', 'Violet Night', 'Glass Night'].includes(name)) BUILTIN_PRESETS[name] = { ...preset, shell: { ...DEFAULT_SHELL, ...preset.shell }, shellGeometry: { ...DEFAULT_SHELL_GEOMETRY, ...preset.shellGeometry }, effects: { ...DEFAULT_EFFECTS, ...preset.effects } };
       });
     } catch {}
   }
@@ -340,15 +347,16 @@ scrolledwindow undershoot {
 
   getShellCSS(): string {
     const { panel, menu, text, accent, dock } = this.state.shell;
+    const { panelHeight, quickSettingsRadius, dockRadius } = this.state.shellGeometry;
     const rgba = (value: string, alpha: number) => {
       const hex = value.replace('#', '');
       return hex.length === 6 ? `rgba(${parseInt(hex.slice(0, 2), 16)},${parseInt(hex.slice(2, 4), 16)},${parseInt(hex.slice(4, 6), 16)},${alpha})` : value;
     };
-    return `#panel { background-color: ${panel}; color: ${text}; background-image: none; border: none; border-image: none; box-shadow: none; }\n.popup-menu-content, .quick-settings, .calendar, .message-list, .modal-dialog { background-color: ${this.state.effects.glass ? rgba(menu, .9) : menu}; color: ${text}; }\n.quick-toggle { border-radius: 999px; }\n.quick-toggle:checked, #panel .panel-button:hover, #panel .panel-button:active { background-color: ${accent}; color: ${text}; }\n#dash, .dash-background { background-color: ${this.state.effects.glass ? rgba(dock, .86) : dock}; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.28); }${this.state.effects.motion ? '\n#panel .panel-button, .quick-toggle, #dash .app-well-app { transition-duration: 160ms; }' : ''}`;
+    return `#panel { height: ${panelHeight}px; background-color: ${panel}; color: ${text}; background-image: none; border: none; border-image: none; box-shadow: none; }\n.popup-menu-content, .calendar, .modal-dialog { background-color: ${menu}; color: ${text}; }\n.quick-settings { background-color: ${this.state.effects.glass ? rgba(this.state.shell.quickSettings, .9) : this.state.shell.quickSettings}; color: ${text}; border-radius: ${quickSettingsRadius}px; }\n.message-list { background-color: ${this.state.shell.notifications}; color: ${text}; }\n.quick-toggle { border-radius: 999px; }\n.quick-toggle:checked, #panel .panel-button:hover, #panel .panel-button:active { background-color: ${accent}; color: ${text}; }\n#dash, .dash-background { background-color: ${this.state.effects.glass ? rgba(dock, .86) : dock}; border-radius: ${dockRadius}px; box-shadow: 0 8px 24px rgba(0,0,0,.28); }${this.state.effects.motion ? '\n#panel .panel-button, .quick-toggle, #dash .app-well-app { transition-duration: 160ms; }' : ''}`;
   }
 
   async loadCurrentTheme(): Promise<void> {
-    this.state = { colors: { ...DEFAULT_COLORS }, geometry: { ...DEFAULT_GEOMETRY }, shell: { ...DEFAULT_SHELL }, effects: { ...DEFAULT_EFFECTS }, presetName: 'Custom' };
+    this.state = { colors: { ...DEFAULT_COLORS }, geometry: { ...DEFAULT_GEOMETRY }, shell: { ...DEFAULT_SHELL }, shellGeometry: { ...DEFAULT_SHELL_GEOMETRY }, effects: { ...DEFAULT_EFFECTS }, presetName: 'Custom' };
     try {
       const { readTextFile, BaseDirectory } = await import('@tauri-apps/plugin-fs');
       const gtk4Path = 'gtk-4.0/gtk.css';
@@ -370,9 +378,17 @@ scrolledwindow undershoot {
       this.state.shell = {
         panel: color('#panel', 'background-color') || this.state.shell.panel,
         menu: color('.popup-menu-content', 'background-color') || this.state.shell.menu,
+        quickSettings: color('.quick-settings', 'background-color') || this.state.shell.quickSettings,
+        notifications: color('.message-list', 'background-color') || this.state.shell.notifications,
         text: color('#panel', 'color') || this.state.shell.text,
         accent: color('.quick-toggle:checked', 'background-color') || this.state.shell.accent,
         dock: color('#dash', 'background-color') || this.state.shell.dock,
+      };
+      const dimension = (selector: string, property: string) => rule(selector).match(new RegExp(`${property}:\\s*(\\d+)px`, 'i'))?.[1];
+      this.state.shellGeometry = {
+        panelHeight: +(dimension('#panel', 'height') || DEFAULT_SHELL_GEOMETRY.panelHeight),
+        quickSettingsRadius: +(dimension('.quick-settings', 'border-radius') || DEFAULT_SHELL_GEOMETRY.quickSettingsRadius),
+        dockRadius: +(dimension('#dash', 'border-radius') || DEFAULT_SHELL_GEOMETRY.dockRadius),
       };
       this.notify();
     } catch (error) {
@@ -431,6 +447,12 @@ scrolledwindow undershoot {
     this.notify();
   }
 
+  setShellGeometry(key: keyof ShellGeometry, value: number): void {
+    this.state.shellGeometry[key] = value;
+    this.state.presetName = 'Custom';
+    this.notify();
+  }
+
   setEffect(key: keyof ThemeEffects, value: boolean): void {
     this.state.effects[key] = value;
     this.state.presetName = 'Custom';
@@ -440,13 +462,13 @@ scrolledwindow undershoot {
   loadPreset(name: string): boolean {
     const preset = BUILTIN_PRESETS[name];
     if (!preset) return false;
-    this.state = { ...preset, colors: { ...preset.colors }, geometry: { ...preset.geometry }, shell: { ...DEFAULT_SHELL, ...preset.shell }, effects: { ...DEFAULT_EFFECTS, ...preset.effects } };
+    this.state = { ...preset, colors: { ...preset.colors }, geometry: { ...preset.geometry }, shell: { ...DEFAULT_SHELL, ...preset.shell }, shellGeometry: { ...DEFAULT_SHELL_GEOMETRY, ...preset.shellGeometry }, effects: { ...DEFAULT_EFFECTS, ...preset.effects } };
     this.notify();
     return true;
   }
 
   savePreset(name: string): void {
-    BUILTIN_PRESETS[name] = { ...this.state, colors: { ...this.state.colors }, geometry: { ...this.state.geometry }, shell: { ...this.state.shell }, effects: { ...this.state.effects }, presetName: name };
+    BUILTIN_PRESETS[name] = { ...this.state, colors: { ...this.state.colors }, geometry: { ...this.state.geometry }, shell: { ...this.state.shell }, shellGeometry: { ...this.state.shellGeometry }, effects: { ...this.state.effects }, presetName: name };
     this.persistPresets();
   }
 
