@@ -10,6 +10,7 @@ const geometry: Array<[keyof GeometryTokens, string, number, number]> = [
   ['headerbar_min_height', 'Title bar minimum height', 20, 46], ['headerbar_padding_top', 'Top padding', 0, 8], ['headerbar_padding_bottom', 'Bottom padding', 0, 8],
   ['gtk4_button_min_height', 'GTK 4 title-button minimum height', 15, 24], ['gtk4_button_min_width', 'GTK 4 title-button minimum width', 15, 24], ['gtk4_button_padding', 'GTK 4 title-button padding', 0, 8], ['gtk4_title_min_height', 'GTK 4 title text minimum height', 15, 24],
   ['gtk3_button_min_height', 'GTK 3 title-button minimum height', 12, 20], ['gtk3_button_min_width', 'GTK 3 title-button minimum width', 12, 20], ['gtk3_button_padding', 'GTK 3 title-button padding', 0, 8], ['gtk3_title_min_height', 'GTK 3 title text minimum height', 12, 20],
+  ['context_menu_min_width', 'Context menu minimum width', 120, 320],
 ];
 const shellNames: Record<keyof ShellTokens, string> = { panel: 'Top bar', menu: 'Menus & quick settings', text: 'Shell text', accent: 'Highlights', dock: 'Dock' };
 
@@ -24,7 +25,7 @@ export class UIController {
       const input = e.target as HTMLInputElement;
       if (input.dataset.color) this.engine.setColor(input.dataset.color as keyof ColorTokens, input.value);
       if (input.dataset.shell) this.engine.setShellColor(input.dataset.shell as keyof ShellTokens, input.value);
-      if (input.dataset.effect) this.engine.setEffect(input.dataset.effect as 'glass' | 'motion', input.checked);
+      if (input.dataset.effect) this.engine.setEffect(input.dataset.effect as 'glass' | 'motion' | 'contextMenuTransparent', input.checked);
       if (input.dataset.geometry) this.engine.setGeometry(input.dataset.geometry as keyof GeometryTokens, input.type === 'checkbox' ? input.checked : +input.value);
       if (input.dataset.color || input.dataset.shell || input.dataset.geometry || input.dataset.effect) {
         const output = input.parentElement?.querySelector('output');
@@ -66,7 +67,7 @@ export class UIController {
     const tabs = [['gtk', 'GTK apps'], ['shell', 'GNOME Shell'], ['recovery', 'Presets & backups']];
     const body = this.active === 'gtk' ? `
       <p class="intro">Choose how GTK 3 and GTK 4 apps look. Your original files are backed up the first time you apply.</p>
-      ${Object.entries(groups).map(([name, keys]) => `<section><h3>${name}</h3>${colorRows(keys.map(k => [this.colorLabel(k), k, c[k]]))}</section>`).join('')}
+      ${Object.entries(groups).map(([name, keys]) => `<section><h3>${name}</h3>${colorRows(keys.map(k => [this.colorLabel(k), k, c[k]]))}${name === 'Cards, menus & popovers' ? `<label class="check-row"><input type="checkbox" data-effect="contextMenuTransparent" ${this.engine.state.effects.contextMenuTransparent ? 'checked' : ''}> Transparent</label>` : ''}</section>`).join('')}
       <section><h3>Size & spacing</h3>${geometry.map(([key, label, min, max]) => `<label class="range-row"><span>${label}</span><input type="range" min="${min}" max="${max}" value="${g[key]}" data-geometry="${key}"><output>${g[key]} px</output></label>`).join('')}<p>These values set minimum sizes. GTK may grow controls to fit an app. Restart apps after applying to see changes.</p>
       <label class="check-row"><input type="checkbox" data-geometry="disable_overshoot" ${g.disable_overshoot ? 'checked' : ''}> Hide scroll edge glow</label><label class="check-row"><input type="checkbox" data-effect="glass" ${this.engine.state.effects.glass ? 'checked' : ''}> Translucent glass surfaces</label><label class="check-row"><input type="checkbox" data-effect="motion" ${this.engine.state.effects.motion ? 'checked' : ''}> Subtle hover animations</label><p>Glass uses transparency; GTK themes cannot add true backdrop blur.</p></section>
       <section><h3>Current preset</h3><p>${this.escape(presetName)}</p><button class="button" data-action="reset">Reset to starter theme</button></section>
