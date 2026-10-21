@@ -289,10 +289,8 @@ scrolledwindow undershoot {
     const gtk4Path = `${gtk4Dir}/gtk.css`;
     const gtk3Path = `${gtk3Dir}/gtk.css`;
 
-    try {
-      await mkdir(gtk4Dir, { baseDir: BaseDirectory.Home, recursive: true });
-      await mkdir(gtk3Dir, { baseDir: BaseDirectory.Home, recursive: true });
-    } catch {}
+    await mkdir(gtk4Dir, { baseDir: BaseDirectory.Home, recursive: true });
+    await mkdir(gtk3Dir, { baseDir: BaseDirectory.Home, recursive: true });
 
     const backupId = new Date().toISOString().replace(/[:.]/g, '-');
     for (const path of [gtk4Path, gtk3Path]) {
@@ -316,17 +314,18 @@ scrolledwindow undershoot {
   }
 
   async restoreOriginal(): Promise<void> {
-    const { BaseDirectory, readTextFile, writeTextFile } = await import('@tauri-apps/plugin-fs');
+    const { BaseDirectory, readTextFile, writeTextFile, exists } = await import('@tauri-apps/plugin-fs');
     const configDir = await import('@tauri-apps/api/path').then(m => m.configDir());
 
     const gtk4Path = `${configDir}/gtk-4.0/gtk.css`;
     const gtk3Path = `${configDir}/gtk-3.0/gtk.css`;
 
-    for (const path of [gtk4Path, gtk3Path]) {
-      try {
-        const original = await readTextFile(`${path}.original`, { baseDir: BaseDirectory.Home });
-        await writeTextFile(path, original, { baseDir: BaseDirectory.Home });
-      } catch {}
+    const paths = await Promise.all([gtk4Path, gtk3Path].map(async path =>
+      await exists(`${path}.original`, { baseDir: BaseDirectory.Home }) ? path : null));
+    if (paths.every(path => !path)) throw new Error('No original theme backup exists yet.');
+    for (const path of paths.filter((path): path is string => !!path)) {
+      const original = await readTextFile(`${path}.original`, { baseDir: BaseDirectory.Home });
+      await writeTextFile(path, original, { baseDir: BaseDirectory.Home });
     }
 
     await this.loadCurrentTheme();
@@ -339,6 +338,7 @@ scrolledwindow undershoot {
     const gtk4Dir = `${configDir}/gtk-4.0`;
     const gtk3Dir = `${configDir}/gtk-3.0`;
 
+    let restored = false;
     for (const dir of [gtk4Dir, gtk3Dir]) {
       try {
         const files = await readDir(dir, { baseDir: BaseDirectory.Home });
@@ -348,22 +348,20 @@ scrolledwindow undershoot {
 
         if (backups.length > 0) {
           await copyFile(`${dir}/${backups[0].name}`, `${dir}/gtk.css`, { fromPathBaseDir: BaseDirectory.Home, toPathBaseDir: BaseDirectory.Home });
+          restored = true;
         }
       } catch {}
     }
 
+    if (!restored) throw new Error('No previous theme backup exists yet.');
     await this.loadCurrentTheme();
   }
 
   async setupFlatpakOverrides(): Promise<void> {
     const { Command } = await import('@tauri-apps/plugin-shell');
-    try {
-      const cmd1 = Command.create('flatpak', ['override', '--user', '--filesystem=xdg-config/gtk-4.0:ro']);
-      const cmd2 = Command.create('flatpak', ['override', '--user', '--filesystem=xdg-config/gtk-3.0:ro']);
-      await cmd1.execute();
-      await cmd2.execute();
-    } catch (error) {
-      console.warn('Flatpak override failed:', error);
-    }
+    const cmd1 = Command.create('flatpak', ['override', '--user', '--filesystem=xdg-config/gtk-4.0:ro']);
+    const cmd2 = Command.create('flatpak', ['override', '--user', '--filesystem=xdg-config/gtk-3.0:ro']);
+    await cmd1.execute();
+    await cmd2.execute();
   }
 }
