@@ -278,12 +278,11 @@ scrolledwindow undershoot {
     return Object.keys(BUILTIN_PRESETS);
   }
 
-  async applyTheme(): Promise<void> {
+  async applyTheme(themeName?: string): Promise<void> {
     const { writeTextFile, BaseDirectory, mkdir, readTextFile } = await import('@tauri-apps/plugin-fs');
     const configDir = await import('@tauri-apps/api/path').then(m => m.configDir());
 
     const css = this.getCSS();
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 
     const gtk4Dir = `${configDir}/gtk-4.0`;
     const gtk3Dir = `${configDir}/gtk-3.0`;
@@ -296,17 +295,40 @@ scrolledwindow undershoot {
     } catch {}
 
     try {
-      const existing = await readTextFile(gtk4Path, { baseDir: BaseDirectory.Home });
-      await writeTextFile(`${gtk4Path}.bak.${timestamp}`, existing, { baseDir: BaseDirectory.Home });
+      const existing4 = await readTextFile(gtk4Path, { baseDir: BaseDirectory.Home });
+      await writeTextFile(`${gtk4Path}.original`, existing4, { baseDir: BaseDirectory.Home });
     } catch {}
 
     try {
-      const existing = await readTextFile(gtk3Path, { baseDir: BaseDirectory.Home });
-      await writeTextFile(`${gtk3Path}.bak.${timestamp}`, existing, { baseDir: BaseDirectory.Home });
+      const existing3 = await readTextFile(gtk3Path, { baseDir: BaseDirectory.Home });
+      await writeTextFile(`${gtk3Path}.original`, existing3, { baseDir: BaseDirectory.Home });
     } catch {}
+
+    if (themeName) {
+      const safeName = themeName.replace(/[^a-zA-Z0-9-_]/g, '-');
+      await writeTextFile(`${gtk4Path}.${safeName}`, css, { baseDir: BaseDirectory.Home });
+      await writeTextFile(`${gtk3Path}.${safeName}`, css, { baseDir: BaseDirectory.Home });
+    }
 
     await writeTextFile(gtk4Path, css, { baseDir: BaseDirectory.Home });
     await writeTextFile(gtk3Path, css, { baseDir: BaseDirectory.Home });
+  }
+
+  async restoreOriginal(): Promise<void> {
+    const { BaseDirectory, readTextFile, writeTextFile } = await import('@tauri-apps/plugin-fs');
+    const configDir = await import('@tauri-apps/api/path').then(m => m.configDir());
+
+    const gtk4Path = `${configDir}/gtk-4.0/gtk.css`;
+    const gtk3Path = `${configDir}/gtk-3.0/gtk.css`;
+
+    for (const path of [gtk4Path, gtk3Path]) {
+      try {
+        const original = await readTextFile(`${path}.original`, { baseDir: BaseDirectory.Home });
+        await writeTextFile(path, original, { baseDir: BaseDirectory.Home });
+      } catch {}
+    }
+
+    await this.loadCurrentTheme();
   }
 
   async rollback(): Promise<void> {

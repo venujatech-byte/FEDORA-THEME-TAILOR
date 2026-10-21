@@ -71,7 +71,13 @@ export class UIController {
         }
       }
       if (target.dataset.action === 'apply') {
-        this.engine.applyTheme();
+        const name = prompt('Enter theme name (optional):');
+        this.engine.applyTheme(name || undefined);
+      }
+      if (target.dataset.action === 'restore-original') {
+        if (confirm('Restore original Fedora theme? This will overwrite current gtk.css')) {
+          this.engine.restoreOriginal();
+        }
       }
       if (target.dataset.action === 'rollback') {
         this.engine.rollback();
@@ -180,6 +186,7 @@ export class UIController {
         <div class="action-bar">
           <button class="btn" data-action="flatpak" aria-label="Setup Flatpak overrides">Flatpak Overrides</button>
           <button class="btn" data-action="rollback" aria-label="Rollback to last backup">Rollback</button>
+          <button class="btn danger" data-action="restore-original" aria-label="Restore original Fedora theme">Restore Original</button>
         </div>
       </div>
 
