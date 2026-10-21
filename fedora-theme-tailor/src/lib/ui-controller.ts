@@ -8,14 +8,14 @@ const groups: Record<string, (keyof ColorTokens)[]> = {
 };
 const geometry: Array<[keyof GeometryTokens, string, number, number]> = [
   ['headerbar_min_height', 'Title bar height', 20, 46], ['headerbar_padding_top', 'Top padding', 0, 8], ['headerbar_padding_bottom', 'Bottom padding', 0, 8],
-  ['gtk4_button_min_height', 'GTK 4 button height', 15, 24], ['gtk4_button_min_width', 'GTK 4 button width', 15, 24], ['gtk4_button_padding', 'GTK 4 button padding', 0, 8],
-  ['gtk3_button_min_height', 'GTK 3 button height', 12, 20], ['gtk3_button_min_width', 'GTK 3 button width', 12, 20], ['gtk3_button_padding', 'GTK 3 button padding', 0, 8],
+  ['gtk4_button_min_height', 'GTK 4 control height', 15, 24], ['gtk4_button_min_width', 'GTK 4 control width', 15, 24], ['gtk4_button_padding', 'GTK 4 control padding', 0, 8], ['gtk4_title_min_height', 'GTK 4 title height', 15, 24],
+  ['gtk3_button_min_height', 'GTK 3 control height', 12, 20], ['gtk3_button_min_width', 'GTK 3 control width', 12, 20], ['gtk3_button_padding', 'GTK 3 control padding', 0, 8], ['gtk3_title_min_height', 'GTK 3 title height', 12, 20],
 ];
 const shellNames: Record<keyof ShellTokens, string> = { panel: 'Top bar', menu: 'Menus & quick settings', text: 'Shell text', accent: 'Highlights', dock: 'Dock' };
 
 export class UIController {
   active = 'gtk';
-  preview = 'gtk';
+  preview = 'gtk4';
   constructor(public engine: ThemeEngine) {}
   async initialize(): Promise<void> { this.bindEvents(); }
 
@@ -30,7 +30,7 @@ export class UIController {
         if (output) output.textContent = `${input.value} px`;
         const { colors, shell, presetName } = this.engine.state;
         const preview = document.querySelector('.preview-pane');
-        if (preview) preview.outerHTML = this.renderPreview(colors, shell, presetName);
+        if (preview) preview.outerHTML = this.renderPreview(colors, shell, this.engine.state.geometry, presetName);
         const chip = document.querySelector('.preset-chip');
         if (chip) chip.textContent = presetName;
         const status = document.getElementById('action-status');
@@ -77,16 +77,24 @@ export class UIController {
         <section><h3>Recovery</h3><button class="button" data-action="rollback">Undo last apply</button><p>Restores the files saved immediately before the last apply.</p><button class="button danger" data-action="original">Restore original files</button><p>Restores the first backup made by this app.</p></section>
         <section><h3>Flatpak apps</h3><p>Give sandboxed apps read-only access to GTK styles.</p><button class="button" data-action="flatpak">Enable Flatpak GTK styles</button></section>`;
     app.innerHTML = `<nav class="side-nav"><div class="brand">FEDORA THEME TAILOR<small>DESKTOP APPEARANCE</small></div>${tabs.map(([id, label]) => `<button class="nav-tab ${this.active === id ? 'selected' : ''}" data-tab="${id}" aria-current="${this.active === id ? 'page' : 'false'}">${label}</button>`).join('')}<div class="nav-foot">Edits are previewed first.<br>Apply when you are ready.</div></nav>
-      <main class="inspector"><header class="inspector-head"><div><small>THEME SETTINGS</small><h1>${tabs.find(([id]) => id === this.active)?.[1]}</h1></div><span class="preset-chip">${this.escape(presetName)}</span></header><div class="inspector-content">${body}<div id="action-status" role="status" aria-live="polite"></div></div></main>${this.renderPreview(c, s, presetName)}`;
+      <main class="inspector"><header class="inspector-head"><div><small>THEME SETTINGS</small><h1>${tabs.find(([id]) => id === this.active)?.[1]}</h1></div><span class="preset-chip">${this.escape(presetName)}</span></header><div class="inspector-content">${body}<div id="action-status" role="status" aria-live="polite"></div></div></main>${this.renderPreview(c, s, g, presetName)}`;
   }
 
-  renderPreview(c: ColorTokens, s: ShellTokens, preset: string): string {
-    const views = [['gtk', 'GTK app'], ['settings', 'Settings'], ['shell', 'Top bar'], ['dock', 'Dock & quick settings']];
-    const tab = this.preview === 'gtk' ? `<div class="sample-window"><header style="background:${c.headerbar_bg_color};color:${c.headerbar_fg_color}"><i></i><b>Files</b><i></i></header><div class="sample-tabs"><span>Recent</span><span>Starred</span><span>Home</span></div><div class="sample-body" style="background:${c.view_bg_color};color:${c.view_fg_color}"><aside style="background:${c.sidebar_bg_color}">Home<br>Documents<br>Downloads<br>Pictures</aside><article><h2>Welcome to Files</h2><p>Your GTK theme preview</p><div class="sample-card" style="background:${c.card_bg_color}">Window, header bar, sidebar and card colors</div><button>Open folder</button></article></div></div>`
+  renderPreview(c: ColorTokens, s: ShellTokens, g: GeometryTokens, preset: string): string {
+    const views = [['gtk3', 'GTK 3'], ['gtk4', 'GTK 4'], ['settings', 'Settings'], ['shell', 'Top bar'], ['dock', 'Dock & quick settings']];
+    const gtkSample = (version: 3 | 4) => {
+      const h = version === 4 ? g.gtk4_button_min_height : g.gtk3_button_min_height;
+      const w = version === 4 ? g.gtk4_button_min_width : g.gtk3_button_min_width;
+      const p = version === 4 ? g.gtk4_button_padding : g.gtk3_button_padding;
+      const title = version === 4 ? g.gtk4_title_min_height : g.gtk3_title_min_height;
+      const control = `min-height:${h}px;min-width:${w}px;padding:0 ${p}px;margin:${version === 4 ? g.gtk4_button_margin : g.gtk3_button_margin}px`;
+      return `<div class="sample-window"><header style="background:${c.headerbar_bg_color};color:${c.headerbar_fg_color};min-height:${g.headerbar_min_height}px;padding-block:${g.headerbar_padding_top}px ${g.headerbar_padding_bottom}px"><div class="mock-controls"><button style="${control};background:#ff625f" aria-label="Close"></button><button style="${control};background:#ffc04a" aria-label="Minimize"></button><button style="${control};background:#49c879" aria-label="Maximize"></button></div><b style="min-height:${title}px">Files · GTK ${version}</b><span class="control-spacer"></span></header><div class="sample-tabs"><span>Recent</span><span>Starred</span><span>Home</span></div><div class="sample-body" style="background:${c.view_bg_color};color:${c.view_fg_color}"><aside style="background:${c.sidebar_bg_color}">Home<br>Documents<br>Downloads<br>Pictures</aside><article><h2>Welcome to Files</h2><p>Title bar and window controls · GTK ${version}</p><div class="sample-card" style="background:${c.card_bg_color}">Header height: ${g.headerbar_min_height}px · Control: ${h} × ${w}px</div><button style="min-height:${h}px;min-width:${w}px;padding:0 ${p}px">Open folder</button><div class="scroll-demo">Scroll edge effect <i class="${g.disable_overshoot ? 'hidden' : ''}"></i></div></article></div></div>`;
+    };
+    const tab = this.preview === 'gtk3' ? gtkSample(3) : this.preview === 'gtk4' ? gtkSample(4)
       : this.preview === 'settings' ? `<div class="sample-window settings-sample"><header style="background:${c.headerbar_bg_color};color:${c.headerbar_fg_color}"><i></i><b>Settings</b><i></i></header><div class="settings-body"><aside style="background:${c.sidebar_bg_color}">Network<br>Bluetooth<br>Appearance<br>Applications<br>Privacy</aside><article style="background:${c.window_bg_color};color:${c.window_fg_color}"><h2>Appearance</h2><p>Personalize your desktop</p><div class="sample-card" style="background:${c.card_bg_color}">Style <b>Dark</b></div><div class="sample-card" style="background:${c.card_bg_color}">Accent color <b style="color:${s.accent}">Blue</b></div></article></div></div>`
       : this.preview === 'shell' ? `<div class="desktop-sample"><div class="topbar" style="background:${s.panel};color:${s.text}">Activities <span>Oct 21  •••</span> ● ◖</div><div class="desktop-window" style="background:${c.window_bg_color};color:${c.window_fg_color}">Fedora desktop <small>GNOME Shell top bar preview</small></div></div>`
       : `<div class="desktop-sample"><div class="topbar" style="background:${s.panel};color:${s.text}">Activities <span>Oct 21  •••</span> ● ◖</div><div class="quick-menu" style="background:${s.menu};color:${s.text}"><b>Quick Settings</b><button style="background:${s.accent}">Wi-Fi　On</button><button>Bluetooth　On</button><button>Dark Style</button></div><div class="dock-sample" style="background:${s.dock}">◉　▣　●　▰　⚙</div></div>`;
-    return `<section class="preview-pane"><header class="preview-head"><div><small>LIVE PREVIEW</small><b>${this.escape(preset)}</b></div><span>Approximation</span></header><div class="preview-tabs" role="tablist">${views.map(([id, label]) => `<button role="tab" aria-selected="${this.preview === id}" class="${this.preview === id ? 'active' : ''}" data-preview="${id}">${label}</button>`).join('')}</div><div class="preview-canvas">${tab}</div><p class="preview-note">A visual guide. Individual apps and GNOME versions may render styles differently.</p></section>`;
+    return `<section class="preview-pane"><header class="preview-head"><div><small>LIVE PREVIEW</small><b>${this.escape(preset)}</b></div><span>Approximation</span></header><div class="preview-tabs" role="tablist">${views.map(([id, label]) => `<button role="tab" aria-selected="${this.preview === id}" class="${this.preview === id ? 'active' : ''}" data-preview="${id}">${label}</button>`).join('')}</div><div class="preview-canvas">${tab}</div><p class="preview-note">Move a slider to preview it. Apply to save; restart GTK apps to see the change.</p></section>`;
   }
 
   escape(value: string): string { return value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!); }
