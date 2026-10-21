@@ -1,4 +1,4 @@
-import { ThemeEngine, ColorTokens, GeometryTokens, DEFAULT_COLORS, DEFAULT_GEOMETRY, BUILTIN_PRESETS } from './theme-engine';
+import { ThemeEngine, ColorTokens, GeometryTokens, DEFAULT_COLORS, DEFAULT_GEOMETRY } from './theme-engine';
 
 const COLOR_GROUPS: Record<string, (keyof ColorTokens)[]> = {
   'Window & View': ['window_bg_color', 'window_fg_color', 'view_bg_color', 'view_fg_color'],
@@ -97,7 +97,7 @@ export class UIController {
       if (target.dataset.presetAction === 'delete') {
         const name = target.dataset.presetName!;
         if (name !== 'Fedora OLED Slate Compact' && confirm(`Delete preset "${name}"?`)) {
-          delete BUILTIN_PRESETS[name];
+          this.engine.deletePreset(name);
           this.render();
         }
       }
