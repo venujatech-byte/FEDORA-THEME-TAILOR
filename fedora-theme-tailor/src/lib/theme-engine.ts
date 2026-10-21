@@ -281,10 +281,8 @@ scrolledwindow undershoot {
     this.state = { colors: { ...DEFAULT_COLORS }, geometry: { ...DEFAULT_GEOMETRY }, shell: { ...DEFAULT_SHELL }, presetName: 'Custom' };
     try {
       const { readTextFile, BaseDirectory } = await import('@tauri-apps/plugin-fs');
-      const configDir = await import('@tauri-apps/api/path').then(m => m.configDir());
-
-      const gtk4Path = `${configDir}/gtk-4.0/gtk.css`;
-      const gtk3Path = `${configDir}/gtk-3.0/gtk.css`;
+      const gtk4Path = '.config/gtk-4.0/gtk.css';
+      const gtk3Path = '.config/gtk-3.0/gtk.css';
 
       let cssContent = '';
       try {
@@ -384,12 +382,10 @@ scrolledwindow undershoot {
 
   async applyTheme(): Promise<void> {
     const { writeTextFile, BaseDirectory, mkdir, readTextFile, exists } = await import('@tauri-apps/plugin-fs');
-    const configDir = await import('@tauri-apps/api/path').then(m => m.configDir());
-
     const css = this.getCSS();
 
-    const gtk4Dir = `${configDir}/gtk-4.0`;
-    const gtk3Dir = `${configDir}/gtk-3.0`;
+    const gtk4Dir = '.config/gtk-4.0';
+    const gtk3Dir = '.config/gtk-3.0';
     const gtk4Path = `${gtk4Dir}/gtk.css`;
     const gtk3Path = `${gtk3Dir}/gtk.css`;
     const shellDir = '.themes/FedoraThemeTailor/gnome-shell';
@@ -422,10 +418,8 @@ scrolledwindow undershoot {
 
   async restoreOriginal(): Promise<void> {
     const { BaseDirectory, readTextFile, writeTextFile, exists, remove } = await import('@tauri-apps/plugin-fs');
-    const configDir = await import('@tauri-apps/api/path').then(m => m.configDir());
-
-    const gtk4Path = `${configDir}/gtk-4.0/gtk.css`;
-    const gtk3Path = `${configDir}/gtk-3.0/gtk.css`;
+    const gtk4Path = '.config/gtk-4.0/gtk.css';
+    const gtk3Path = '.config/gtk-3.0/gtk.css';
     const shellPath = '.themes/FedoraThemeTailor/gnome-shell/gnome-shell.css';
 
     let restored = false;
@@ -446,10 +440,8 @@ scrolledwindow undershoot {
 
   async rollback(): Promise<void> {
     const { readDir, copyFile, BaseDirectory } = await import('@tauri-apps/plugin-fs');
-    const configDir = await import('@tauri-apps/api/path').then(m => m.configDir());
-
-    const gtk4Dir = `${configDir}/gtk-4.0`;
-    const gtk3Dir = `${configDir}/gtk-3.0`;
+    const gtk4Dir = '.config/gtk-4.0';
+    const gtk3Dir = '.config/gtk-3.0';
     const shellDir = '.themes/FedoraThemeTailor/gnome-shell';
 
     let restored = false;
