@@ -402,6 +402,11 @@ scrolledwindow undershoot {
     if (paddingMatch) {
       this.state.geometry.headerbar_padding_top = parseInt(paddingMatch[1], 10);
     }
+
+    const menuRule = css.split('}').find(block => block.includes('popover.menu {')) || '';
+    this.state.effects.contextMenuTransparent = /background-color:\s*transparent/i.test(menuRule);
+    const menuWidth = menuRule.match(/min-width:\s*(\d+)px/i);
+    if (menuWidth) this.state.geometry.context_menu_min_width = +menuWidth[1];
   }
 
   setColor(key: keyof ColorTokens, value: string): void {
