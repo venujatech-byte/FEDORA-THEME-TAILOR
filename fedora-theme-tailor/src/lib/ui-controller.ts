@@ -75,7 +75,7 @@ export class UIController {
         }
       }
       if (target.dataset.action === 'apply') {
-        this.runAction('Applying theme…', 'Theme applied. Restart GTK apps to see every change.', () => this.engine.applyTheme());
+        this.runAction('Applying GTK styles…', 'GTK 3 and GTK 4 style files saved. Restart apps to reload them.', () => this.engine.applyTheme());
       }
       if (target.dataset.action === 'restore-original') {
         if (confirm('Restore the GTK files as they were before this app was first applied? Current GTK CSS will be replaced.')) {
@@ -112,6 +112,11 @@ export class UIController {
       <div class="panel scrollbar-thin" role="navigation" aria-label="Theme controls">
         <div class="panel-header">Palette Tokens</div>
         <div class="panel-content">
+          <section class="scope-card" aria-label="Theme coverage">
+            <h3>Where this applies</h3>
+            <p>GTK 3 and GTK 4 apps read these styles from your user account.</p>
+            <p>For Flatpak apps, enable access below. Libadwaita apps may only partly follow custom styles; GNOME Shell, Qt, and other toolkits are not changed here.</p>
+          </section>
           ${Object.entries(COLOR_GROUPS).map(([group, keys]) => `
             <section class="section animate-in">
               <h3 class="section-title">${group}</h3>
@@ -188,7 +193,7 @@ export class UIController {
           <h3 class="action-heading">Backups &amp; Flatpak apps</h3>
           <div class="action-list">
             <button class="btn action-choice" data-action="flatpak" aria-label="Allow Flatpak apps to read GTK theme files">
-              <strong>Enable Flatpak themes</strong><small>Let Flatpak apps read your GTK theme files.</small>
+              <strong>Enable Flatpak themes</strong><small>Let Flatpak apps read your GTK 3 and GTK 4 styles (read-only).</small>
             </button>
             <button class="btn action-choice" data-action="rollback" aria-label="Undo the last theme apply">
               <strong>Undo last apply</strong><small>Return to the theme saved just before the last apply.</small>
