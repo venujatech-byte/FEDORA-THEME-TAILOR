@@ -7,6 +7,7 @@ export interface ColorTokens {
   dialog_bg_color: string;
   popover_bg_color: string;
   context_menu_bg_color: string;
+  accent_color: string;
   headerbar_bg_color: string;
   headerbar_fg_color: string;
   headerbar_border_color: string;
@@ -34,6 +35,7 @@ export interface GeometryTokens {
   gtk3_button_margin: number;
   gtk3_title_min_height: number;
   context_menu_min_width: number;
+  surface_radius: number;
   disable_overshoot: boolean;
 }
 
@@ -73,6 +75,7 @@ export const DEFAULT_COLORS: ColorTokens = {
   dialog_bg_color: '#141414',
   popover_bg_color: '#141414',
   context_menu_bg_color: '#1e232d',
+  accent_color: '#4a9eff',
   headerbar_bg_color: '#1e232d',
   headerbar_fg_color: '#ffffff',
   headerbar_border_color: '#1e232d',
@@ -100,6 +103,7 @@ export const DEFAULT_GEOMETRY: GeometryTokens = {
   gtk3_button_margin: 0,
   gtk3_title_min_height: 15,
   context_menu_min_width: 180,
+  surface_radius: 12,
   disable_overshoot: true,
 };
 
@@ -144,7 +148,7 @@ export class ThemeEngine {
     try {
       const saved = JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY) || '{}') as Record<string, ThemeState>;
       Object.entries(saved).forEach(([name, preset]) => {
-        if (preset?.colors && preset?.geometry && !['Fedora OLED Slate Compact', 'Fedora Blue', 'Violet Night', 'Glass Night'].includes(name)) BUILTIN_PRESETS[name] = { ...preset, shell: { ...DEFAULT_SHELL, ...preset.shell }, shellGeometry: { ...DEFAULT_SHELL_GEOMETRY, ...preset.shellGeometry }, effects: { ...DEFAULT_EFFECTS, ...preset.effects } };
+        if (preset?.colors && preset?.geometry && !['Fedora OLED Slate Compact', 'Fedora Blue', 'Violet Night', 'Glass Night'].includes(name)) BUILTIN_PRESETS[name] = { ...preset, colors: { ...DEFAULT_COLORS, ...preset.colors }, geometry: { ...DEFAULT_GEOMETRY, ...preset.geometry }, shell: { ...DEFAULT_SHELL, ...preset.shell }, shellGeometry: { ...DEFAULT_SHELL_GEOMETRY, ...preset.shellGeometry }, effects: { ...DEFAULT_EFFECTS, ...preset.effects } };
       });
     } catch {}
   }
@@ -191,18 +195,24 @@ treeview {
 .card,
 .boxed-list {
   background-color: @card_bg_color;
+  border-radius: ${px(geometry.surface_radius)};
 }
 
 dialog,
 .dialog {
   background-color: @dialog_bg_color;
+  border-radius: ${px(geometry.surface_radius)};
 }
 
 popover,
 popover contents {
   background-color: @popover_bg_color;
   color: @window_fg_color;
+  border-radius: ${px(geometry.surface_radius)};
 }
+
+selection { background-color: @accent_color; color: @window_fg_color; }
+check, radio, switch:checked, button:checked, progressbar progress, scale highlight { background-color: @accent_color; }
 
 /* GTK 3 menus and GTK 4 context-menu popovers */
 menu,
@@ -212,7 +222,7 @@ popover.menu {
   min-width: ${px(geometry.context_menu_min_width)};
   color: @headerbar_fg_color;
   border: 1px solid alpha(@headerbar_fg_color, 0.14);
-  border-radius: 14px;
+  border-radius: ${px(geometry.surface_radius)};
   box-shadow: 0 5px 18px alpha(#000000, 0.35);
 }
 
@@ -225,7 +235,7 @@ popover.menu modelbutton {
 
 menuitem:hover,
 popover.menu modelbutton:hover {
-  background-color: alpha(@headerbar_fg_color, 0.10);
+  background-color: alpha(@accent_color, 0.22);
   color: @headerbar_fg_color;
 }
 
@@ -438,6 +448,8 @@ popover.menu contents {
     this.state.effects.contextMenuTransparent = /background-color:\s*transparent/i.test(menuRule);
     const menuWidth = menuRule.match(/min-width:\s*(\d+)px/i);
     if (menuWidth) this.state.geometry.context_menu_min_width = +menuWidth[1];
+    const surfaceRadius = menuRule.match(/border-radius:\s*(\d+)px/i);
+    if (surfaceRadius) this.state.geometry.surface_radius = +surfaceRadius[1];
   }
 
   setColor(key: keyof ColorTokens, value: string): void {
@@ -477,7 +489,7 @@ popover.menu contents {
   loadPreset(name: string): boolean {
     const preset = BUILTIN_PRESETS[name];
     if (!preset) return false;
-    this.state = { ...preset, colors: { ...preset.colors }, geometry: { ...preset.geometry }, shell: { ...DEFAULT_SHELL, ...preset.shell }, shellGeometry: { ...DEFAULT_SHELL_GEOMETRY, ...preset.shellGeometry }, effects: { ...DEFAULT_EFFECTS, ...preset.effects } };
+    this.state = { ...preset, colors: { ...DEFAULT_COLORS, ...preset.colors }, geometry: { ...DEFAULT_GEOMETRY, ...preset.geometry }, shell: { ...DEFAULT_SHELL, ...preset.shell }, shellGeometry: { ...DEFAULT_SHELL_GEOMETRY, ...preset.shellGeometry }, effects: { ...DEFAULT_EFFECTS, ...preset.effects } };
     this.notify();
     return true;
   }
