@@ -290,12 +290,20 @@ scrolledwindow undershoot {
       } catch {
         try {
           cssContent = await readTextFile(gtk3Path, { baseDir: BaseDirectory.Config });
-        } catch {
-          return;
-        }
+        } catch {}
       }
 
-      this.parseCSS(cssContent);
+      if (cssContent) this.parseCSS(cssContent);
+      const shellCSS = await readTextFile('.themes/FedoraThemeTailor/gnome-shell/gnome-shell.css', { baseDir: BaseDirectory.Home }).catch(() => '');
+      const rule = (selector: string) => shellCSS.split('}').find(block => block.slice(0, block.indexOf('{')).includes(selector)) || '';
+      const color = (selector: string, property: string) => rule(selector).match(new RegExp(`${property}:\\s*(#[\\da-f]{6})`, 'i'))?.[1];
+      this.state.shell = {
+        panel: color('#panel', 'background-color') || this.state.shell.panel,
+        menu: color('.popup-menu-content', 'background-color') || this.state.shell.menu,
+        text: color('#panel', 'color') || this.state.shell.text,
+        accent: color('.quick-toggle:checked', 'background-color') || this.state.shell.accent,
+        dock: color('#dash', 'background-color') || this.state.shell.dock,
+      };
       this.notify();
     } catch (error) {
       console.warn('Could not load current theme:', error);
