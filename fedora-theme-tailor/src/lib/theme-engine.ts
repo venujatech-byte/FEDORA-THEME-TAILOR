@@ -278,7 +278,7 @@ scrolledwindow undershoot {
     return Object.keys(BUILTIN_PRESETS);
   }
 
-  async applyTheme(themeName?: string): Promise<void> {
+  async applyTheme(): Promise<void> {
     const { writeTextFile, BaseDirectory, mkdir, readTextFile, exists } = await import('@tauri-apps/plugin-fs');
     const configDir = await import('@tauri-apps/api/path').then(m => m.configDir());
 
@@ -301,12 +301,6 @@ scrolledwindow undershoot {
         }
         await writeTextFile(`${path}.bak.${backupId}`, existing, { baseDir: BaseDirectory.Home });
       }
-    }
-
-    if (themeName) {
-      const safeName = themeName.replace(/[^a-zA-Z0-9-_]/g, '-');
-      await writeTextFile(`${gtk4Path}.${safeName}`, css, { baseDir: BaseDirectory.Home });
-      await writeTextFile(`${gtk3Path}.${safeName}`, css, { baseDir: BaseDirectory.Home });
     }
 
     await writeTextFile(gtk4Path, css, { baseDir: BaseDirectory.Home });
