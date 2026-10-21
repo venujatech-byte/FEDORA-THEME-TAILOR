@@ -17,7 +17,8 @@
         { "path": "$CONFIG/gtk-4.0/*" },
         { "path": "$CONFIG/gtk-3.0/*" },
         { "path": "$HOME/.config/gtk-4.0/*" },
-        { "path": "$HOME/.config/gtk-3.0/*" }
+        { "path": "$HOME/.config/gtk-3.0/*" },
+        { "path": "$HOME/.themes/FedoraThemeTailor/gnome-shell/*" }
       ]
     },
     {
@@ -26,7 +27,8 @@
         { "path": "$CONFIG/gtk-4.0" },
         { "path": "$CONFIG/gtk-3.0" },
         { "path": "$HOME/.config/gtk-4.0" },
-        { "path": "$HOME/.config/gtk-3.0" }
+        { "path": "$HOME/.config/gtk-3.0" },
+        { "path": "$HOME/.themes/FedoraThemeTailor/gnome-shell" }
       ]
     },
     {
@@ -35,7 +37,8 @@
         { "path": "$CONFIG/gtk-4.0/*" },
         { "path": "$CONFIG/gtk-3.0/*" },
         { "path": "$HOME/.config/gtk-4.0/*" },
-        { "path": "$HOME/.config/gtk-3.0/*" }
+        { "path": "$HOME/.config/gtk-3.0/*" },
+        { "path": "$HOME/.themes/FedoraThemeTailor/gnome-shell/*" }
       ]
     },
     {
@@ -44,7 +47,8 @@
         { "path": "$CONFIG/gtk-4.0/*" },
         { "path": "$CONFIG/gtk-3.0/*" },
         { "path": "$HOME/.config/gtk-4.0/*" },
-        { "path": "$HOME/.config/gtk-3.0/*" }
+        { "path": "$HOME/.config/gtk-3.0/*" },
+        { "path": "$HOME/.themes/FedoraThemeTailor/gnome-shell/*" }
       ]
     },
     {
@@ -53,7 +57,8 @@
         { "path": "$CONFIG/gtk-4.0/*" },
         { "path": "$CONFIG/gtk-3.0/*" },
         { "path": "$HOME/.config/gtk-4.0/*" },
-        { "path": "$HOME/.config/gtk-3.0/*" }
+        { "path": "$HOME/.config/gtk-3.0/*" },
+        { "path": "$HOME/.themes/FedoraThemeTailor/gnome-shell/*" }
       ]
     },
     {
@@ -62,7 +67,8 @@
         { "path": "$CONFIG/gtk-4.0" },
         { "path": "$CONFIG/gtk-3.0" },
         { "path": "$HOME/.config/gtk-4.0" },
-        { "path": "$HOME/.config/gtk-3.0" }
+        { "path": "$HOME/.config/gtk-3.0" },
+        { "path": "$HOME/.themes/FedoraThemeTailor/gnome-shell" }
       ]
     },
     {
@@ -71,7 +77,8 @@
         { "path": "$CONFIG/gtk-4.0" },
         { "path": "$CONFIG/gtk-3.0" },
         { "path": "$HOME/.config/gtk-4.0" },
-        { "path": "$HOME/.config/gtk-3.0" }
+        { "path": "$HOME/.config/gtk-3.0" },
+        { "path": "$HOME/.themes/FedoraThemeTailor/gnome-shell" }
       ]
     },
     {
@@ -80,7 +87,8 @@
         { "path": "$CONFIG/gtk-4.0/*" },
         { "path": "$CONFIG/gtk-3.0/*" },
         { "path": "$HOME/.config/gtk-4.0/*" },
-        { "path": "$HOME/.config/gtk-3.0/*" }
+        { "path": "$HOME/.config/gtk-3.0/*" },
+        { "path": "$HOME/.themes/FedoraThemeTailor/gnome-shell/*" }
       ]
     },
     "shell:default",
