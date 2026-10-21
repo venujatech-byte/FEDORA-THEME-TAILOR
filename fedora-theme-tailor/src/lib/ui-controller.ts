@@ -223,7 +223,7 @@ export class UIController {
               <main class="mock-content" role="main">
                 <div class="mock-card">
                   <div class="mock-card-title">Theme Engine Status</div>
-                  <div class="mock-card-text">Current preset: <strong>${this.escapeHTML(presetName)}</strong>. Modify colors and geometry above to see live updates in this preview window.</div>
+                  <div class="mock-card-text">Current preset: <strong id="preview-preset-name">${this.escapeHTML(presetName)}</strong>. Modify colors and geometry above to see live updates in this preview window.</div>
                 </div>
                 <div class="mock-card">
                   <div class="mock-card-title">Color Tokens</div>
@@ -303,6 +303,13 @@ export class UIController {
     }).forEach(([key, value]) => preview.style.setProperty(key, value));
     const status = document.getElementById('action-status');
     if (status) status.textContent = 'Unsaved edits · apply when ready.';
+    const preset = document.getElementById('preview-preset-name');
+    if (preset) preset.textContent = this.engine.state.presetName;
+    document.querySelectorAll<HTMLElement>('.preset-item').forEach(item => {
+      const active = item.querySelector('.preset-name')?.textContent === this.engine.state.presetName;
+      item.classList.toggle('active', active);
+      item.setAttribute('aria-selected', String(active));
+    });
   }
 
   async runAction(pending: string, success: string, action: () => Promise<void>): Promise<void> {
