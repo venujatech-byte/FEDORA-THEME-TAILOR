@@ -144,11 +144,11 @@ export class UIController {
             <div class="preset-list" role="listbox" aria-label="Theme presets">
               ${this.engine.getPresets().map(name => `
                 <div class="preset-item ${name === presetName ? 'active' : ''}" role="option" aria-selected="${name === presetName}">
-                  <span class="preset-name">${name}</span>
+                  <span class="preset-name">${this.escapeHTML(name)}</span>
                   <div class="preset-actions">
-                    <button class="preset-btn" data-preset-action="load" data-preset-name="${name}" aria-label="Load ${name}" title="Load">↘</button>
+                    <button class="preset-btn" data-preset-action="load" data-preset-name="${this.escapeHTML(name)}" aria-label="Load ${this.escapeHTML(name)}" title="Load">↘</button>
                     ${name !== 'Fedora OLED Slate Compact' ? `
-                      <button class="preset-btn danger" data-preset-action="delete" data-preset-name="${name}" aria-label="Delete ${name}" title="Delete">✕</button>
+                      <button class="preset-btn danger" data-preset-action="delete" data-preset-name="${this.escapeHTML(name)}" aria-label="Delete ${this.escapeHTML(name)}" title="Delete">✕</button>
                     ` : ''}
                   </div>
                 </div>
@@ -223,7 +223,7 @@ export class UIController {
               <main class="mock-content" role="main">
                 <div class="mock-card">
                   <div class="mock-card-title">Theme Engine Status</div>
-                  <div class="mock-card-text">Current preset: <strong>${presetName}</strong>. Modify colors and geometry above to see live updates in this preview window.</div>
+                  <div class="mock-card-text">Current preset: <strong>${this.escapeHTML(presetName)}</strong>. Modify colors and geometry above to see live updates in this preview window.</div>
                 </div>
                 <div class="mock-card">
                   <div class="mock-card-title">Color Tokens</div>
@@ -284,6 +284,10 @@ export class UIController {
       .replace(/\b\w/g, c => c.toUpperCase());
   }
 
+  escapeHTML(value: string): string {
+    return value.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!);
+  }
+
   syncPreview(): void {
     const { colors, geometry } = this.engine.state;
     const preview = document.querySelector<HTMLElement>('.mock-window');
@@ -307,7 +311,8 @@ export class UIController {
     try {
       await action();
       this.render();
-      if (status) status.textContent = success;
+      const updatedStatus = document.getElementById('action-status');
+      if (updatedStatus) updatedStatus.textContent = success;
     } catch (error) {
       if (status) status.textContent = `Could not finish: ${String(error)}`;
     }
