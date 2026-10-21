@@ -345,10 +345,15 @@ scrolledwindow undershoot {
 menu,
 .menu,
 .context-menu,
-popover.menu,
+popover.menu {
+  background-color: ${contextMenuBackground} !important;
+}
+
 popover.menu > contents,
 popover.menu contents {
-  background-color: ${contextMenuBackground} !important;
+  background-color: transparent !important;
+  border: none;
+  box-shadow: none;
 }
 `.trim();
 
