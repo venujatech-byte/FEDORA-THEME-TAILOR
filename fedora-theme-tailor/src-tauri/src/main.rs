@@ -6,6 +6,7 @@ struct DesktopApp {
     id: String,
     name: String,
     icon: String,
+    customized: bool,
 }
 
 fn desktop_dirs() -> Vec<PathBuf> {
@@ -62,9 +63,23 @@ fn list_desktop_apps() -> Vec<DesktopApp> {
             let Some(id) = path.file_name().and_then(|n| n.to_str()).map(str::to_owned) else {
                 continue;
             };
+            let user_file = dirs::home_dir()
+                .unwrap_or_default()
+                .join(".local/share/applications")
+                .join(&id);
+            let customized = user_file
+                .with_extension("desktop.fedora-theme-tailor-original")
+                .exists()
+                || user_file
+                    .with_extension("desktop.fedora-theme-tailor-created")
+                    .exists();
             if !hidden && !name.is_empty() {
-                apps.entry(id.clone())
-                    .or_insert(DesktopApp { id, name, icon });
+                apps.entry(id.clone()).or_insert(DesktopApp {
+                    id,
+                    name,
+                    icon,
+                    customized,
+                });
             }
         }
     }
