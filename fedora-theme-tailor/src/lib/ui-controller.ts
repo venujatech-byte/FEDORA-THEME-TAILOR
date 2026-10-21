@@ -38,7 +38,6 @@ export class UIController {
   }
 
   async initialize(): Promise<void> {
-    this.unsub = this.engine.subscribe(() => this.render());
     this.bindEvents();
   }
 
@@ -51,17 +50,23 @@ export class UIController {
         if (swatch?.classList.contains('color-swatch')) {
           swatch.style.backgroundColor = target.value;
         }
+        this.syncPreview();
       }
       if (target.dataset.geometryKey) {
         const value = target.type === 'checkbox' ? target.checked : parseFloat(target.value);
         this.engine.setGeometry(target.dataset.geometryKey as keyof GeometryTokens, value);
+        const valueLabel = target.parentElement?.querySelector('.slider-value');
+        if (valueLabel) valueLabel.textContent = `${value}${target.dataset.geometryKey === 'disable_overshoot' ? '' : 'px'}`;
+        this.syncPreview();
       }
     });
 
-    document.addEventListener('change', (e) => {
-      const target = e.target as HTMLElement;
+    document.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement).closest<HTMLElement>('[data-action], [data-preset-action]');
+      if (!target) return;
       if (target.dataset.presetAction === 'load') {
         this.engine.loadPreset(target.dataset.presetName!);
+        this.render();
       }
       if (target.dataset.presetAction === 'save') {
         const name = (document.getElementById('preset-name-input') as HTMLInputElement)?.value?.trim();
@@ -71,30 +76,25 @@ export class UIController {
         }
       }
       if (target.dataset.action === 'apply') {
-        const name = prompt('Enter theme name (optional):');
-        this.engine.applyTheme(name || undefined);
+        this.runAction('Applying theme…', 'Theme applied. Restart GTK apps to see every change.', () => this.engine.applyTheme());
       }
       if (target.dataset.action === 'restore-original') {
         if (confirm('Restore original Fedora theme? This will overwrite current gtk.css')) {
-          this.engine.restoreOriginal();
+          this.runAction('Restoring original theme…', 'Original theme restored.', () => this.engine.restoreOriginal());
         }
       }
       if (target.dataset.action === 'rollback') {
-        this.engine.rollback();
+        this.runAction('Rolling back…', 'Previous theme restored.', () => this.engine.rollback());
       }
       if (target.dataset.action === 'flatpak') {
-        this.engine.setupFlatpakOverrides();
+        this.runAction('Setting up Flatpak access…', 'Flatpak access configured.', () => this.engine.setupFlatpakOverrides());
       }
       if (target.dataset.action === 'reset') {
         this.engine.state.colors = { ...DEFAULT_COLORS };
         this.engine.state.geometry = { ...DEFAULT_GEOMETRY };
         this.engine.state.presetName = 'Custom';
-        this.engine.notify();
+        this.render();
       }
-    });
-
-    document.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
       if (target.dataset.presetAction === 'delete') {
         const name = target.dataset.presetName!;
         if (name !== 'Fedora OLED Slate Compact' && confirm(`Delete preset "${name}"?`)) {
@@ -161,6 +161,7 @@ export class UIController {
           </section>
         </div>
         <div class="action-bar">
+          <span id="action-status" role="status" aria-live="polite">Edits are preview only until applied.</span>
           <button class="btn danger" data-action="reset" aria-label="Reset to defaults">Reset</button>
           <button class="btn primary" data-action="apply" aria-label="Apply theme">Apply</button>
         </div>
@@ -193,7 +194,7 @@ export class UIController {
       <div class="preview-pane">
         <div class="preview-header">Live Preview</div>
         <div class="preview-content">
-          <div class="mock-window" style="--headerbar-height: ${geometry.headerbar_min_height}px">
+          <div class="mock-window" style="--headerbar-height: ${geometry.headerbar_min_height}px; --preview-window: ${colors.window_bg_color}; --preview-view: ${colors.view_bg_color}; --preview-header: ${colors.headerbar_bg_color}; --preview-sidebar: ${colors.sidebar_bg_color}; --preview-fg: ${colors.window_fg_color}; --preview-card: ${colors.card_bg_color}">
             <div class="mock-headerbar">
               <div class="mock-window-controls">
                 <button class="mock-window-control close" aria-label="Close"></button>
@@ -281,5 +282,33 @@ export class UIController {
       .replace(/_/g, ' ')
       .replace(/([a-z])([A-Z])/g, '$1 $2')
       .replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  syncPreview(): void {
+    const { colors, geometry } = this.engine.state;
+    const preview = document.querySelector<HTMLElement>('.mock-window');
+    if (!preview) return;
+    Object.entries({
+      '--headerbar-height': `${geometry.headerbar_min_height}px`,
+      '--preview-window': colors.window_bg_color,
+      '--preview-view': colors.view_bg_color,
+      '--preview-header': colors.headerbar_bg_color,
+      '--preview-sidebar': colors.sidebar_bg_color,
+      '--preview-fg': colors.window_fg_color,
+      '--preview-card': colors.card_bg_color,
+    }).forEach(([key, value]) => preview.style.setProperty(key, value));
+    const status = document.getElementById('action-status');
+    if (status) status.textContent = 'Unsaved edits · apply when ready.';
+  }
+
+  async runAction(pending: string, success: string, action: () => Promise<void>): Promise<void> {
+    const status = document.getElementById('action-status');
+    if (status) status.textContent = pending;
+    try {
+      await action();
+      if (status) status.textContent = success;
+    } catch (error) {
+      if (status) status.textContent = `Could not finish: ${String(error)}`;
+    }
   }
 }
