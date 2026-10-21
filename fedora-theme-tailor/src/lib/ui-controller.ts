@@ -2,7 +2,7 @@ import { ThemeEngine, ColorTokens, GeometryTokens, ShellTokens } from './theme-e
 
 const groups: Record<string, (keyof ColorTokens)[]> = {
   'Window & content': ['window_bg_color', 'window_fg_color', 'view_bg_color', 'view_fg_color'],
-  'Cards & popovers': ['card_bg_color', 'dialog_bg_color', 'popover_bg_color'],
+  'Cards, menus & popovers': ['card_bg_color', 'dialog_bg_color', 'popover_bg_color', 'context_menu_bg_color'],
   'Title bars': ['headerbar_bg_color', 'headerbar_fg_color', 'headerbar_border_color', 'headerbar_backdrop_color'],
   'Sidebars': ['sidebar_bg_color', 'sidebar_fg_color', 'sidebar_backdrop_color', 'sidebar_border_color', 'secondary_sidebar_bg_color', 'secondary_sidebar_backdrop_color'],
 };
