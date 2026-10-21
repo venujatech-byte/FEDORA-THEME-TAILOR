@@ -298,7 +298,7 @@ scrolledwindow undershoot {
       const original = `${path}.original`;
       if (!await exists(original, { baseDir: BaseDirectory.Home })) {
         if (await exists(path, { baseDir: BaseDirectory.Home })) {
-        const existing = await readTextFile(path, { baseDir: BaseDirectory.Home });
+          const existing = await readTextFile(path, { baseDir: BaseDirectory.Home });
           await writeTextFile(original, existing, { baseDir: BaseDirectory.Home });
         } else await writeTextFile(`${path}.original.absent`, '', { baseDir: BaseDirectory.Home });
       }
